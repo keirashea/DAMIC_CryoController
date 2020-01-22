@@ -5,48 +5,63 @@ set (CMAKE_CXX_FLAGS "-Wno-write-strings -std=gnu++1y -I/usr/include/mysql-cppco
 set (CMAKE_EXE_LINKER_FLAGS "-Wno-write-strings -lmysqlcppconn8 -lm")
 
 
-set(SOURCECC
-   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/Cryocooler.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
-)
-set(HEADERSCC
-   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/Cryocooler.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
+set(SOURCEARD
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArduinoHeater.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
 )
 
-
-set(SOURCELSH
-   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/LakeShoreHeater.cpp
-   #${CMAKE_CURRENT_SOURCE_DIR}/helpers.cpp
-)
-set(HEADERSLSH
-   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/LakeShoreHeater.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+set(HEADERARD
+    ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArduinoHeater.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
 )
 
-set(SOURCESM
-   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/CCMySQLInteraction.cpp
-)
-set(HEADERSSM
-   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
-)
+#set(SOURCECC
+#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/Cryocooler.cpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
+#)
+#set(HEADERSCC
+#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/Cryocooler.hpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
+#)
+#
+#
+#set(SOURCELSH
+#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/LakeShoreHeater.cpp
+#   #${CMAKE_CURRENT_SOURCE_DIR}/helpers.cpp
+#)
+#set(HEADERSLSH
+#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/LakeShoreHeater.hpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+#)
 
+#set(SOURCESM
+#   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.cpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/CCMySQLInteraction.cpp
+#)
+#set(HEADERSSM
+#   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.h
+#   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.hpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+#)
 
-add_executable( CCDrone CCDroneStart.cpp )
-target_link_libraries( CCDrone ${SOURCECC} ${HEADERSCC})
+add_executable( ArdHeaterDrone ArduinoHeaterDroneStart.cpp MysqlCredentials.hpp)
+target_link_libraries( ArdHeaterDrone ${SOURCEARD} ${HEADERARD})
 
-add_executable( LSHDrone LSHDroneStart.cpp )
-target_link_libraries( LSHDrone ${SOURCELSH} ${HEADERSLSH})
+#add_executable( CCDrone CCDroneStart.cpp MysqlCredentials.hpp)
+#target_link_libraries( CCDrone ${SOURCECC} ${HEADERSCC})
+#
+#add_executable( LSHDrone LSHDroneStart.cpp MysqlCredentials.hpp)
+#target_link_libraries( LSHDrone ${SOURCELSH} ${HEADERSLSH})
 
-add_executable( StartSM StartSM.cpp )
-target_link_libraries( StartSM ${SOURCESM} ${HEADERSSM})
+#add_executable( StartSM StartSM.cpp MysqlCredentials.hpp)
+#target_link_libraries( StartSM ${SOURCESM} ${HEADERSSM})
 
