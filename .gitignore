@@ -9,3 +9,8 @@ CCDrone
 LSHDrone
 MysqlCredentials.hpp
 StartSM
+ArdHeaterDrone
+
+.idea
+cmake-build-debug
+DAMICMCryoCtrl.cbp
