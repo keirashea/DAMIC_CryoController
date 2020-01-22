@@ -22,6 +22,15 @@
 
 #include <mysqlx/xdevapi.h>
 
+ArduinoHeater::ArduinoHeater(){
+    this->WatchdogFuse = 1;
+    this->setPower = 0;
+    this->currentTemperatureK = -1;
+    this->currentPower = -1;
+
+    printf("Dummy instance of class. No serial communication available");
+
+}
 
 ArduinoHeater::ArduinoHeater(std::string SerialPort) : SerialDevice(SerialPort) {
 
@@ -49,6 +58,7 @@ ArduinoHeater::ArduinoHeater(std::string SerialPort) : SerialDevice(SerialPort) 
     this->WatchdogFuse = 1;
     this->setPower = 0;
     this->currentTemperatureK = -1;
+    this->currentPower = -1;
 
     printf("Arduino heater is now ready to accept instructions.\n");
 }
@@ -102,5 +112,35 @@ void ArduinoHeater::SetPower(int newPower) {
 
     this->WriteString(ArdCmd);
     this->setPower = newPower;
+
+}
+
+void ArduinoHeater::UpdateMysql(void) {
+
+    // Connect to  Database
+    mysqlx::Session DDroneSession("localhost", 33060, DMysqlUser, DMysqlPass);
+    mysqlx::Schema DDatabase = DDroneSession.getSchema("DAMICDrone");
+
+    // Get control parameter table
+    mysqlx::Table CtrlParameterTable = DDatabase.getTable("ControlParameters");
+    mysqlx::RowResult CtrlRowResult = CtrlParameterTable.select("HeaterPower", "WatchDogFuse")
+            .bind("IDX", 1).execute();
+    mysqlx::Row CtrlRow = CtrlRowResult.fetchOne();
+
+    this->setPower = CtrlRow[0];
+    this->_cWatchdogFuse = CtrlRow[1];
+
+    // Get the Arduino Heater table to update and insert values
+    mysqlx::Table ArduinoHeaterState = DDatabase.getTable("ArduinoHeaterState");
+    mysqlx::Result ArdHeaterRes = ArduinoHeaterState.insert("HeaterPower", "HeaterSetPower", "TemperatureK1", "WatchDogState")
+            .values(this->currentPower, this->setPower, this->currentTemperatureK, this->WatchdogFuse).execute();
+
+    // Check to see if values were inserted properly
+    unsigned int warnings = ArdHeaterRes.getWarningsCount();
+    (warnings == 0) ? this->SQLStatusMsg = "OK" : this->SQLStatusMsg = "WARN!\n";
+
+    // Close the database connection
+    DDroneSession.close();
+
 
 }

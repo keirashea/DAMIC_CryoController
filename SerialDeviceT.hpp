@@ -17,6 +17,7 @@
 class SerialDevice
 {
 public:
+    SerialDevice();
     SerialDevice(std::string );
     ~SerialDevice();
     void WriteString(std::string s);

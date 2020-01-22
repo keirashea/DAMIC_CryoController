@@ -20,7 +20,9 @@
 
 #include "SerialDeviceT.hpp"
 
+SerialDevice::SerialDevice(){
 
+}
 
 SerialDevice::SerialDevice(std::string port){
     /* Open File Descriptor */

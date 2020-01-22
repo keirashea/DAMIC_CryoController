@@ -12,6 +12,7 @@
 
 class ArduinoHeater: public SerialDevice {
 public:
+    ArduinoHeater();
     ArduinoHeater(std::string);
     ~ArduinoHeater();
 
