@@ -105,8 +105,8 @@ void ArduinoHeater::ReadTemperatureK() {
 
 void ArduinoHeater::SetPower(int newPower) {
 
-    if (newPower < minimumPower) newPower = minimumPower;
-    if (newPower > maximumPower) newPower = maximumPower;
+    if (newPower < ARD_MINIMUM_POWER) newPower = ARD_MINIMUM_POWER;
+    if (newPower > ARD_MAXIMUM_POWER) newPower = ARD_MAXIMUM_POWER;
 
     std::string ArdCmd = "S " + std::to_string(newPower) + "\r\n";
 

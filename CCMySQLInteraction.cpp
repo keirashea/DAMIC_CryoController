@@ -14,8 +14,6 @@
 #include <iostream>
 
 
-
-
 void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     
     // Connect to server using a connection URL
@@ -24,43 +22,31 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     
     /*First lets get the control parameters*/
     mysqlx::Table CtrlTable = DDb.getTable("ControlParameters");
-    mysqlx::RowResult ControlResult = CtrlTable.select("TTemperature", "Kp", "Ki", "Kd", "KpR","KiR", "KdR", "CCPowerState","WatchdogFuse")
+    mysqlx::RowResult ControlResult = CtrlTable.select("TargetTemperature", "Kp", "Ki", "Kd", "KpR","KiR", "KdR", "WatchDogFuse")
     .bind("IDX", 1).execute();
     /*The row with the result*/
     mysqlx::Row CtrlRow = ControlResult.fetchOne();
     
-    _thisInteractionData.TTemp = CtrlRow[0];
+    _thisInteractionData.targetTemp = CtrlRow[0];
     _thisInteractionData.kpA = CtrlRow[1];
     _thisInteractionData.kiA = CtrlRow[2];
     _thisInteractionData.kdA = CtrlRow[3];
     _thisInteractionData.kpR = CtrlRow[4];
     _thisInteractionData.kiR = CtrlRow[5];
     _thisInteractionData.kdR = CtrlRow[6];
-    _thisInteractionData.CCPowerStateLast = CtrlRow[7];
-    _thisInteractionData.WatchdogFuse = CtrlRow[8];
+    _thisInteractionData.WatchdogFuse = (bool) CtrlRow[7];
     
-    /*Next - the current TC*/
-    mysqlx::Table TCTable = DDb.getTable("CCState");
-    mysqlx::RowResult TCResult = TCTable.select("UNIX_TIMESTAMP(TimeS)", "TC", "PMin", "PMax")
-    .orderBy("TimeS DESC").limit(1).execute();
-    /*The row with the result*/
-    mysqlx::Row TCRow = TCResult.fetchOne();
-    if (TCRow[0].getType() > 0) _thisInteractionData.LastCCTime = (long) TCRow[0];
-    _thisInteractionData.curTemp = TCRow[1];
-    _thisInteractionData.PMin = TCRow[2];
-    _thisInteractionData.PMax = TCRow[3];
 
+    /* Next - temperature and heater power from the Arduino heater */
+    mysqlx::Table ArduinoHeaterTable = DDb.getTable("ArduinoHeaterState");
+    mysqlx::RowResult ArdHeatRowResult = ArduinoHeaterTable.select("UNIX_TIMESTAMP(Time)", "TemperatureK1", "HeaterPower")
+            .orderBy("Time DESC").limit(1).execute();
+    mysqlx::Row ArdHeatRow = ArdHeatRowResult.fetchOne();
 
-    /*Next - the current TC from LakeShore RTD*/
-    mysqlx::Table LSHTable = DDb.getTable("LSHState");
-    mysqlx::RowResult LSHResult = LSHTable.select("UNIX_TIMESTAMP(TimeS)", "LSHTemp")
-            .orderBy("TimeS DESC").limit(1).execute();
-    /*The row with the result*/
-    mysqlx::Row LSHRow = LSHResult.fetchOne();
-    if (LSHRow[0].getType() > 0) _thisInteractionData.LastLSHTime = (long) LSHRow[0];
-    _thisInteractionData.curTempLSH = LSHRow[1];    
-    
-    
+    // Parse the mysql data into data struct
+    if (ArdHeatRow[0].getType() > 0) _thisInteractionData.LastArduinoTime = (long) ArdHeatRow[0];
+    _thisInteractionData.currentTemp = ArdHeatRow[1];
+
     
     /*Now update the monitoring table*/
     
@@ -73,9 +59,7 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     .values(this->ThisRunPIDValue, (int)this->CurrentFSMState, (int)this->ShouldBeFSMState).execute();
     warnings=SMStatsResult.getWarningsCount();
     
-    
-    
-    
+
     // Accessing an existing table
     mysqlx::Table SendControl = DDb.getTable("ControlParameters");
     
@@ -83,30 +67,8 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     mysqlx::Result SCResult= SendControl.update().set("HeaterPW",this->ThisRunHeaterPower).where("IDX=1").execute();
     warnings+=SCResult.getWarningsCount();
 
-
-    //Update the CCPowerOutput
-    this->SentCCPower = this->ThisRunCCPower + _thisInteractionData.PMin;
-    SCResult= SendControl.update().set("CCPower",this->SentCCPower).where("IDX=1").execute();
-    warnings+=SCResult.getWarningsCount();
-
-    
-    //Update the CCPowerState if needed;
-    if (_thisInteractionData.CCPowerStateLast != this->CCoolerPower){
-        SCResult= SendControl.update().set("CCPowerState",this->CCoolerPower).where("IDX=1").execute();
-        warnings+=SCResult.getWarningsCount();
-        
-        //Debug
-        printf("Cryocooler switch %d\n",this->CCoolerPower);
-        
-    }
-
-
-        
-    
-    
     if (warnings != 0) std::cout<<"SQL Generated warnings! \n";
-    
-    
+
     DDroneSession.close();
     
 }

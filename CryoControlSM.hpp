@@ -34,21 +34,15 @@ struct DataPacket{
     double kiR;
     double kdR;
 
-    double TTemp;
-    double curTemp;
-    double curTempLSH;
-    double PMin;
-    double PMax;
+    double targetTemp;
+    double currentTemp;
 
     double PID;
     double SystemState;
 
-    bool CCPowerStateLast;
     bool WatchdogFuse;
 
-
-    time_t LastCCTime;
-    time_t LastLSHTime;
+    time_t LastArduinoTime;
 
 };
 
@@ -65,29 +59,21 @@ private:
     double TInput, TOutput;
     double RInput, ROutput;
 
-    bool CCoolerPower=0;
-
     /*SM variables and memory*/
     double KpA=2, KiA=5, KdA=1;
     double KpR=2, KiR=5, KdR=1;
 
     /*Process related variables*/
     double ThisRunPIDValue=0.0;
-    double ThisRunCCPower=0.0;
     double ThisRunHeaterPower=0.0;
-    double SentCCPower=0.0;
     double CurrentTemperature=0.0;
     double SetTemperature=0.0;
-    double TempratureRateMovingAvg=0.0;
+    double TemperatureRateMovingAvg=0.0;
     double RSetpoint=0.0;
 
-    double MovingAvgCCRTD = 0.0;
-    double MovingAvgLSHRTD=0.0;
+    double TemperatureMovingAvg= 0.0;
 
-    double PMax = 0.0;
-    double PMin = 0.0;
-    time_t LastCCTime;
-    time_t LastLSHTime;
+    time_t LastArduinoTime;
     time_t NowTime;
 
 
@@ -108,28 +94,23 @@ private:
     void UpdateVars(DataPacket &);
 
     void Idle(void);
-    void CoolDownHot(void );
-    void CoolDownCold(void);
+    void CoolDown(void);
     void Warmup(void);
-
-    void MaintainWarm(void);
-    void MaintainCold(void);
+    void Maintain(void);
     void Fault(void);
 
     /*Enum values of all the states that the FSM can be in*/
     enum FSMStates {
         ST_Idle,
-        ST_CoolDownHot,
-        ST_CoolDownCold,
+        ST_CoolDown,
         ST_Warmup,
-        ST_MaintainWarm,
-        ST_MaintainCold,
+        ST_Maintain,
         ST_Fault
     };
 
 
 
-    /*Jump table function for the FSM states and the function poiter to the current state*/
+    /*Jump table function for the FSM states and the function pointer to the current state*/
     std::map<FSMStates, void (CryoControlSM::*)( void)> STFnTable;
     void (CryoControlSM::* CryoStateFn)(void);
 
@@ -156,6 +137,7 @@ public:
     double getCurrentTemperature(void);
     double getTargetTemperature(void);
     double getCurrentPIDValue(void);
+    double getTemperature(void);
     double getTemperatureRate(void);
     double getTemperatureSP(void);
     double getTRateSP(void);

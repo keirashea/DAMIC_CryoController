@@ -9,6 +9,8 @@
 #include <iostream>
 #include "SerialDeviceT.hpp"
 
+#define ARD_MAXIMUM_POWER 1023
+#define ARD_MINIMUM_POWER 0
 
 class ArduinoHeater: public SerialDevice {
 public:
@@ -34,9 +36,6 @@ public:
     std::string SQLStatusMsg;
     int _cHeaterMode, _cWatchdogFuse;
 
-    // Limits on the capabilities of the arduino heaters
-    const int minimumPower = 0;
-    const int maximumPower = 1023;
 
 };
 

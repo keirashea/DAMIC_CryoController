@@ -42,16 +42,16 @@ set(HEADERARD
 #   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
 #)
 
-#set(SOURCESM
-#   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.cpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/CCMySQLInteraction.cpp
-#)
-#set(HEADERSSM
-#   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.h
-#   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.hpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
-#)
+set(SOURCESM
+   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/CCMySQLInteraction.cpp
+)
+set(HEADERSSM
+   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.hpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+)
 
 add_executable( ArdHeaterDrone ArduinoHeaterDroneStart.cpp MysqlCredentials.hpp)
 target_link_libraries( ArdHeaterDrone ${SOURCEARD} ${HEADERARD})
@@ -62,6 +62,6 @@ target_link_libraries( ArdHeaterDrone ${SOURCEARD} ${HEADERARD})
 #add_executable( LSHDrone LSHDroneStart.cpp MysqlCredentials.hpp)
 #target_link_libraries( LSHDrone ${SOURCELSH} ${HEADERSLSH})
 
-#add_executable( StartSM StartSM.cpp MysqlCredentials.hpp)
-#target_link_libraries( StartSM ${SOURCESM} ${HEADERSSM})
+add_executable( StartSM StartSM.cpp MysqlCredentials.hpp)
+target_link_libraries( StartSM ${SOURCESM} ${HEADERSSM})
 

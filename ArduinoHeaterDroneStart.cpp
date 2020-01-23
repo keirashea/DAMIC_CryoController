@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 
         fflush(stdout);
         printf("\rArduino Heater | Power: %0.2f,  Temp (K): %0.2f",
-                ArdHeat->currentPower / ArdHeat->maximumPower, ArdHeat->currentTemperatureK);
+                ArdHeat->currentPower / ARD_MAXIMUM_POWER, ArdHeat->currentTemperatureK);
 
         sleep(2);
     }
