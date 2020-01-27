@@ -29,7 +29,8 @@ public:
     void UpdateMysql(void );
 
     float currentPower;
-    float currentTemperatureK;
+    float currentTemperatureK1;
+    float currentTemperatureK2;
     int setPower;
 
     bool WatchdogFuse;

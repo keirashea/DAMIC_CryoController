@@ -25,7 +25,8 @@
 ArduinoHeater::ArduinoHeater(){
     this->WatchdogFuse = 1;
     this->setPower = 0;
-    this->currentTemperatureK = -1;
+    this->currentTemperatureK1 = -1;
+    this->currentTemperatureK2 = -1;
     this->currentPower = -1;
 
     printf("Dummy instance of class. No serial communication available");
@@ -57,7 +58,8 @@ ArduinoHeater::ArduinoHeater(std::string SerialPort) : SerialDevice(SerialPort) 
 
     this->WatchdogFuse = 1;
     this->setPower = 0;
-    this->currentTemperatureK = -1;
+    this->currentTemperatureK1 = -1;
+    this->currentTemperatureK2 = -1;
     this->currentPower = -1;
 
     printf("Arduino heater is now ready to accept instructions.\n");
@@ -71,7 +73,7 @@ void ArduinoHeater::ReadPower() {
     // Reads Power being sent to the Arduino heater
 
     std::string ArdP_String;
-    std::string ArdCmd = "P\r\n";
+    std::string ArdCmd = "q";
 
 
     this->WriteString(ArdCmd);
@@ -88,7 +90,7 @@ void ArduinoHeater::ReadPower() {
 void ArduinoHeater::ReadTemperatureK() {
     // Reads the temperature in K
     std::string ArdT_String;
-    std::string ArdCmd = "T\r\n";
+    std::string ArdCmd = "t";
 
 
     this->WriteString(ArdCmd);
@@ -96,7 +98,16 @@ void ArduinoHeater::ReadTemperatureK() {
 
 
     try{
-        this->currentTemperatureK = std::stof(ArdT_String) + 273.;
+        // Parses the CSV string into two temperatures
+        std::vector<std::string> vTemperatureStrings;
+        std::stringstream tempStringStream(ArdT_String);
+        while( tempStringStream.good() ){
+            std::string tempSubString;
+            std::getline(tempStringStream, tempSubString, ',');
+            vTemperatureStrings.push_back(tempSubString);
+        }
+        this->currentTemperatureK1 = std::stof(vTemperatureStrings.at(0)) + 273.;
+        this->currentTemperatureK2 = std::stof(vTemperatureStrings.at(1)) + 273.;
     } catch (...) {
         printf("Error in ReadTemperatureK. Continuing...\n ");
     }
@@ -108,7 +119,7 @@ void ArduinoHeater::SetPower(int newPower) {
     if (newPower < ARD_MINIMUM_POWER) newPower = ARD_MINIMUM_POWER;
     if (newPower > ARD_MAXIMUM_POWER) newPower = ARD_MAXIMUM_POWER;
 
-    std::string ArdCmd = "S " + std::to_string(newPower) + "\r\n";
+    std::string ArdCmd = "w " + std::to_string(newPower);
 
     this->WriteString(ArdCmd);
     this->setPower = newPower;
@@ -132,8 +143,8 @@ void ArduinoHeater::UpdateMysql(void) {
 
     // Get the Arduino Heater table to update and insert values
     mysqlx::Table ArduinoHeaterState = DDatabase.getTable("ArduinoHeaterState");
-    mysqlx::Result ArdHeaterRes = ArduinoHeaterState.insert("HeaterPower", "HeaterSetPower", "TemperatureK1", "WatchDogState")
-            .values(this->currentPower, this->setPower, this->currentTemperatureK, this->WatchdogFuse).execute();
+    mysqlx::Result ArdHeaterRes = ArduinoHeaterState.insert("HeaterPower", "HeaterSetPower", "TemperatureK1", "TemperatureK2", "WatchDogState")
+            .values(this->currentPower, this->setPower, this->currentTemperatureK1, this->currentTemperatureK2, this->WatchdogFuse).execute();
 
     // Check to see if values were inserted properly
     unsigned int warnings = ArdHeaterRes.getWarningsCount();

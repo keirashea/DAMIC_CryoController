@@ -20,21 +20,22 @@
 int main(int argc, char** argv)
 {
     // Create Serial Object
-//    auto * ArdHeat = new ArduinoHeater("/dev/tty0");
-    auto * ArdHeat = new ArduinoHeater();
+    auto * ArdHeat = new ArduinoHeater("/dev/ttyACM0");
+//    auto * ArdHeat = new ArduinoHeater();
     sleep(1);
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
 
-        // Generate some random data for testing
+/*        // Generate some random data for testing
         float randTemp = 290 + static_cast<float> (rand()) / static_cast<float> (RAND_MAX / 3);
         int randPower = rand() % 1023;
-        ArdHeat->currentTemperatureK = randTemp;
-        ArdHeat->currentPower = randPower;
-//        ArdHeat->ReadPower();
-//        ArdHeat->ReadTemperatureK();
+        ArdHeat->currentTemperatureK1 = randTemp;
+        ArdHeat->currentTemperatureK2 = randTemp - 1. + static_cast<float> (rand()) / static_cast<float> (RAND_MAX / 2);
+        ArdHeat->currentPower = static_cast<int> (rand()) % ARD_MAXIMUM_POWER;*/
+        ArdHeat->ReadPower();
+        ArdHeat->ReadTemperatureK();
         ArdHeat->UpdateMysql();
 
         if (ArdHeat->_cWatchdogFuse != 1){
@@ -50,8 +51,8 @@ int main(int argc, char** argv)
 
 
         fflush(stdout);
-        printf("\rArduino Heater | Power: %0.2f,  Temp (K): %0.2f",
-                ArdHeat->currentPower / ARD_MAXIMUM_POWER, ArdHeat->currentTemperatureK);
+        printf("\rArduino Heater | Power: %0.2f,  Temp1 (K): %0.2f,  Temp2 (K): %0.2f",
+                ArdHeat->currentPower / ARD_MAXIMUM_POWER, ArdHeat->currentTemperatureK1, ArdHeat->currentTemperatureK2);
 
         sleep(2);
     }
