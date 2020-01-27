@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project( DAMICMCryoCtrl )
-
-set (CMAKE_CXX_FLAGS "-Wno-write-strings -std=gnu++1y -I/usr/include/mysql-cppconn-8 -O3 -march=native -m64")
+set(CMAKE_BUILD_TYPE Debug)
+set (CMAKE_CXX_FLAGS "-Wno-write-strings -std=gnu++1y -I/usr/include/mysql-cppconn-8 -O0 -march=native -m64")
 set (CMAKE_EXE_LINKER_FLAGS "-Wno-write-strings -lmysqlcppconn8 -lm")
 
 
@@ -43,14 +43,14 @@ set(HEADERARD
 #)
 
 set(SOURCESM
-   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/CCMySQLInteraction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CCMySQLInteraction.cpp
 )
 set(HEADERSSM
-   ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.hpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
 )
 
 add_executable( ArdHeaterDrone ArduinoHeaterDroneStart.cpp MysqlCredentials.hpp)
