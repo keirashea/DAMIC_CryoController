@@ -34,9 +34,14 @@ int main(int argc, char** argv)
         ArdHeat->currentTemperatureK1 = randTemp;
         ArdHeat->currentTemperatureK2 = randTemp - 1. + static_cast<float> (rand()) / static_cast<float> (RAND_MAX / 2);
         ArdHeat->currentPower = static_cast<int> (rand()) % ARD_MAXIMUM_POWER;*/
+
+        // Read current parameters
         ArdHeat->ReadPower();
         ArdHeat->ReadTemperatureK();
         ArdHeat->UpdateMysql();
+
+        // Set power based on ArdHeat->setPower
+        ArdHeat->SetPower(ArdHeat->setPower);
 
         if (ArdHeat->_cWatchdogFuse != 1){
             fflush(stdout);

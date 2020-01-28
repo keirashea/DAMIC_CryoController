@@ -40,13 +40,9 @@ ArduinoHeater::ArduinoHeater(std::string SerialPort) : SerialDevice(SerialPort) 
     cfsetispeed (&this->tty, (speed_t)B9600);
 
     /* Setting other Port Stuff */
-    tty.c_cflag     |=  PARENB;
-    tty.c_cflag     |= PARODD;
-    tty.c_cflag     &=  ~CSTOPB;
-    tty.c_cflag     &=  ~CSIZE;
-    tty.c_cflag     |=  CS7;
-    tty.c_cflag |= IXON ;
-    tty.c_cflag     &=  ~CRTSCTS;           // no flow control
+
+    // Found that the defaults in tty worked best for arduino heater
+
 
     /* Flush Port, then applies attributes */
     tcflush( USB, TCIFLUSH );
@@ -119,9 +115,20 @@ void ArduinoHeater::SetPower(int newPower) {
     if (newPower < ARD_MINIMUM_POWER) newPower = ARD_MINIMUM_POWER;
     if (newPower > ARD_MAXIMUM_POWER) newPower = ARD_MAXIMUM_POWER;
 
-    std::string ArdCmd = "w " + std::to_string(newPower);
+    std::string ArdSP_string;
+    std::string ArdCmd = "w" + std::to_string(newPower);
 
     this->WriteString(ArdCmd);
+    sleep(1);
+    ArdSP_string = this->ReadLine();
+
+    // Check to make sure that the sent power was received
+    if( std::stoi(ArdSP_string) != newPower ){
+        printf("Error in SetPower. Continuing...\n");
+        return;
+    }
+
+    // Update the class with the new power
     this->setPower = newPower;
 
 }
