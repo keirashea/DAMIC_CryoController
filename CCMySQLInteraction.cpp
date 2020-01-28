@@ -64,7 +64,7 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     mysqlx::Table SendControl = DDb.getTable("ControlParameters");
     
     // Insert SQL Table data
-    mysqlx::Result SCResult= SendControl.update().set("HeaterPW",this->ThisRunHeaterPower).where("IDX=1").execute();
+    mysqlx::Result SCResult= SendControl.update().set("HeaterPower",this->ThisRunHeaterPower).where("IDX=1").execute();
     warnings+=SCResult.getWarningsCount();
 
     if (warnings != 0) std::cout<<"SQL Generated warnings! \n";
