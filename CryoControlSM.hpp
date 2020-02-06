@@ -21,7 +21,6 @@
 
 #define RateMovingAvgN 20
 #define DeltaTRatePerMin 3.0
-#define CryoCoolerMaxPowerDelta 20
 
 
 struct DataPacket{
