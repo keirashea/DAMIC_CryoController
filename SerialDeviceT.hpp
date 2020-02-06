@@ -21,6 +21,7 @@ public:
     SerialDevice(std::string );
     ~SerialDevice();
     void WriteString(std::string s);
+    void WriteChar(const char *c, const int n);
     std::string ReadLine();
     std::string ReadLineThrowR();
 

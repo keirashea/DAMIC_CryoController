@@ -10,6 +10,7 @@ LSHDrone
 MysqlCredentials.hpp
 StartSM
 ArdHeaterDrone
+PfeifferDroneStart
 
 .idea
 cmake-build-debug

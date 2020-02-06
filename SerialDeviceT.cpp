@@ -94,6 +94,11 @@ void SerialDevice::WriteString(std::string s)
     //printf ("Written bits: %d\n",n_written);
 }
 
+void SerialDevice::WriteChar(const char *c, const int n){
+    int n_written;
+    n_written = write( USB, c, n);
+}
+
 
 std::string SerialDevice::ReadLine()
 {

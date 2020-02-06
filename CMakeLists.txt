@@ -18,29 +18,18 @@ set(HEADERARD
     ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
 )
 
-#set(SOURCECC
-#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/Cryocooler.cpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
-#)
-#set(HEADERSCC
-#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/Cryocooler.hpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
-#)
-#
-#
-#set(SOURCELSH
-#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/LakeShoreHeater.cpp
-#   #${CMAKE_CURRENT_SOURCE_DIR}/helpers.cpp
-#)
-#set(HEADERSLSH
-#   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/LakeShoreHeater.hpp
-#   ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
-#)
+set(SOURCEPFEIF
+        ${CMAKE_CURRENT_SOURCE_DIR}/PfeifferVacuumGauge.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
+)
+
+set(HEADERPFEIF
+        ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/PfeifferVacuumGauge.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
+)
 
 set(SOURCESM
     ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
@@ -56,11 +45,8 @@ set(HEADERSSM
 add_executable( ArdHeaterDrone ArduinoHeaterDroneStart.cpp MysqlCredentials.hpp)
 target_link_libraries( ArdHeaterDrone ${SOURCEARD} ${HEADERARD})
 
-#add_executable( CCDrone CCDroneStart.cpp MysqlCredentials.hpp)
-#target_link_libraries( CCDrone ${SOURCECC} ${HEADERSCC})
-#
-#add_executable( LSHDrone LSHDroneStart.cpp MysqlCredentials.hpp)
-#target_link_libraries( LSHDrone ${SOURCELSH} ${HEADERSLSH})
+add_executable( PfeifferDroneStart PfeifferDroneStart.cpp MysqlCredentials.hpp)
+target_link_libraries( PfeifferDroneStart ${SOURCEPFEIF} ${HEADERPFEIF})
 
 add_executable( StartSM StartSM.cpp MysqlCredentials.hpp)
 target_link_libraries( StartSM ${SOURCESM} ${HEADERSSM})
