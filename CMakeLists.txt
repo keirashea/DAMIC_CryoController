@@ -31,6 +31,19 @@ set(HEADERPFEIF
         ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
 )
 
+set(SOURCELN2
+        ${CMAKE_CURRENT_SOURCE_DIR}/LN2Controller.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
+        )
+set(HEADERLN2
+        ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/LN2Controller.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/MysqlCredentials.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
+        )
+
+
 set(SOURCESM
     ${CMAKE_CURRENT_SOURCE_DIR}/CryoControlSM.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PID_v1.cpp
@@ -47,6 +60,9 @@ target_link_libraries( ArdHeaterDrone ${SOURCEARD} ${HEADERARD})
 
 add_executable( PfeifferDroneStart PfeifferDroneStart.cpp MysqlCredentials.hpp)
 target_link_libraries( PfeifferDroneStart ${SOURCEPFEIF} ${HEADERPFEIF})
+
+add_executable( LN2DroneStart LN2DroneStart.cpp MysqlCredentials.hpp)
+target_link_libraries( LN2DroneStart ${SOURCELN2} ${HEADERLN2})
 
 add_executable( StartSM StartSM.cpp MysqlCredentials.hpp)
 target_link_libraries( StartSM ${SOURCESM} ${HEADERSSM})
