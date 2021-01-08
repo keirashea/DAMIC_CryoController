@@ -20,7 +20,7 @@
 int main(int argc, char** argv)
 {
     // Create Serial Object
-    auto * ArdHeat = new ArduinoHeater("/dev/ttyACM0");
+    auto * ArdHeat = new ArduinoHeater("/dev/ArduinoHeater");
 //    auto * ArdHeat = new ArduinoHeater();
     sleep(1);
 
@@ -28,12 +28,13 @@ int main(int argc, char** argv)
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
 
-/*        // Generate some random data for testing
+/*      // Generate some random data for testing
         float randTemp = 290 + static_cast<float> (rand()) / static_cast<float> (RAND_MAX / 3);
         int randPower = rand() % 1023;
         ArdHeat->currentTemperatureK1 = randTemp;
         ArdHeat->currentTemperatureK2 = randTemp - 1. + static_cast<float> (rand()) / static_cast<float> (RAND_MAX / 2);
-        ArdHeat->currentPower = static_cast<int> (rand()) % ARD_MAXIMUM_POWER;*/
+        ArdHeat->currentPower = static_cast<int> (rand()) % ARD_MAXIMUM_POWER;
+*/
 
         // Read current parameters
         ArdHeat->ReadPower();

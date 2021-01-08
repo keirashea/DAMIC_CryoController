@@ -26,7 +26,8 @@ CryoControlSM::CryoControlSM(void){
         {ST_Idle, &CryoControlSM::Idle},
         {ST_CoolDown, &CryoControlSM::CoolDown},
         {ST_Warmup, &CryoControlSM::Warmup},
-        {ST_Maintain, &CryoControlSM::Maintain},
+        {ST_MaintainCold, &CryoControlSM::Maintain},
+        {ST_MaintainWarm, &CryoControlSM::Maintain},
         {ST_Fault, &CryoControlSM::Fault}
     };
 
@@ -144,7 +145,11 @@ void CryoControlSM::StateDecision(void ){
     if (this->SetTemperature < this->CurrentTemperature - 10) this->ShouldBeFSMState=ST_CoolDown;
 
     /*Maintain a cold state once the temperature is within 10 K of set point*/
-    if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 10) this->ShouldBeFSMState=ST_Maintain;
+    if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 10 && this->SetTemperature < 220) this->ShouldBeFSMState=ST_MaintainCold;
+
+    /*Maintain a warm state once the temperature is within 10 K of set point while warming up*/
+    if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 10 && this->SetTemperature >= 220) this->ShouldBeFSMState=ST_MaintainWarm;
+
 
     
     /* 

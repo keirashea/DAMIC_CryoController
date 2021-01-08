@@ -70,7 +70,7 @@ private:
     double TemperatureRateMovingAvg=0.0;
     double RSetpoint=0.0;
 
-    double TemperatureMovingAvg= 0.0;
+    double TemperatureMovingAvg= 298.0;
 
     time_t LastArduinoTime;
     time_t NowTime;
@@ -103,7 +103,8 @@ private:
         ST_Idle,
         ST_CoolDown,
         ST_Warmup,
-        ST_Maintain,
+        ST_MaintainCold,
+        ST_MaintainWarm,
         ST_Fault
     };
 

@@ -13,7 +13,7 @@
 int main(int argc, char ** argv){
 
     // Create new serial object
-    auto * LN2Control = new LN2Controller("/dev/ttyACM0"); // may need to change the name
+    auto * LN2Control = new LN2Controller("/dev/ArduinoLN2"); // may need to change the name
 //    auto * LN2Control = new LN2Controller(); // Dummy class
     sleep(1);
 
@@ -31,8 +31,8 @@ int main(int argc, char ** argv){
         LN2Control->UpdateMysql();
 
         // Send database dependent parameters
-        LN2Control->WriteSMState(1);
-        LN2Control->WriteCurrentTemperature(261.34);
+        LN2Control->WriteSMState(LN2Control->smState);
+        LN2Control->WriteCurrentTemperature(LN2Control->currentTemperature);
 
         // Implement watchdog -- shuts off liquid nitrogen supplies by forcing state into idle
         if(!LN2Control->WatchdogFuse){

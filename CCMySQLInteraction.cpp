@@ -39,7 +39,7 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
 
     /* Next - temperature and heater power from the Arduino heater */
     mysqlx::Table ArduinoHeaterTable = DDb.getTable("ArduinoHeaterState");
-    mysqlx::RowResult ArdHeatRowResult = ArduinoHeaterTable.select("UNIX_TIMESTAMP(Time)", "TemperatureK1", "HeaterPower")
+    mysqlx::RowResult ArdHeatRowResult = ArduinoHeaterTable.select("UNIX_TIMESTAMP(Time)", "TemperatureK2", "HeaterPower")
             .orderBy("Time DESC").limit(1).execute();
     mysqlx::Row ArdHeatRow = ArdHeatRowResult.fetchOne();
 
@@ -64,7 +64,10 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     mysqlx::Table SendControl = DDb.getTable("ControlParameters");
     
     // Insert SQL Table data
-    mysqlx::Result SCResult= SendControl.update().set("HeaterPower",this->ThisRunHeaterPower).where("IDX=1").execute();
+    mysqlx::Result SCResult= SendControl.update()
+                                        .set("HeaterPower",this->ThisRunHeaterPower)
+                                        .set("SMState", (int)this->CurrentFSMState)
+                                        .where("IDX=1").execute();
     warnings+=SCResult.getWarningsCount();
 
     if (warnings != 0) std::cout<<"SQL Generated warnings! \n";
