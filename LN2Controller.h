@@ -40,6 +40,8 @@ public:
     unsigned long timeInCurrentState;
     float overflowVoltage;
 
+    std::string SQLStatusMsg;
+
 
 };
 

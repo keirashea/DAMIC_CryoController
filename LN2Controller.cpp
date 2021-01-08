@@ -128,6 +128,7 @@ void LN2Controller::WriteSMState(int smState){
 
     // Write to arduino
     this->WriteString(cmd);
+    // this->
 }
 void LN2Controller::WriteCurrentTemperature(float temperature){
 
@@ -140,5 +141,48 @@ void LN2Controller::WriteCurrentTemperature(float temperature){
 
 // Other functions
 void LN2Controller::UpdateMysql(void ){
+
+
+    // Connect to  Database
+    mysqlx::Session DDroneSession("localhost", 33060, DMysqlUser, DMysqlPass);
+    mysqlx::Schema DDatabase = DDroneSession.getSchema("DAMICDrone");
+
+    // Get SM state
+    // mysqlx::Table SMParameterTable = DDatabase.getTable("SMState");
+    // mysqlx::RowResult SMRowResult = SMParameterTable.select("SystemState")
+    //         .orderBy("IDX DESC").limit(1).execute();
+
+    // mysqlx::Row SMRow = SMRowResult.fetchOne();
+    // this->smState = SMRow[0];
+
+    // Get temperature from heater database
+    mysqlx::Table HeaterParameterTable = DDatabase.getTable("ArduinoHeaterState");
+    mysqlx::RowResult HeaterRowResult = HeaterParameterTable.select("TemperatureK2", "TemperatureK1")
+            .orderBy("IDX DESC").limit(1).execute();
+    mysqlx::Row HeaterRow = HeaterRowResult.fetchOne();
+    this->currentTemperature = (double) HeaterRow[0] > 0 ? (double)HeaterRow[0] : (double)HeaterRow[1];
+
+    // Get watchdog fuse from control parameters
+    mysqlx::Table CtrlParameterTable = DDatabase.getTable("ControlParameters");
+    mysqlx::RowResult CtrlRowResult = CtrlParameterTable.select("WatchDogFuse", "SMState")
+            .bind("IDX", 1).execute();
+    mysqlx::Row CtrlRow = CtrlRowResult.fetchOne();
+    this->WatchdogFuse = (bool) CtrlRow[0];
+    this->smState = CtrlRow[1];
+
+    // Get the LN2 table to update and insert values
+    mysqlx::Table LN2ControllerTable = DDatabase.getTable("LN2ControllerState");
+    mysqlx::Result LN2ControllerResult = LN2ControllerTable.insert("ValveState", "TimeBetweenFillState", "TimeInCurrentState", "SMState", "CurrentTemperature", "OverflowVoltage")
+            .values(this->valveState, this->timeBetweenFillState, this->timeInCurrentState, this->smState, this->currentTemperature, this->overflowVoltage).execute();
+
+    // Check to see if values were inserted properly
+    unsigned int warnings = LN2ControllerResult.getWarningsCount();
+    (warnings == 0) ? this->SQLStatusMsg = "OK" : this->SQLStatusMsg = "WARN!\n";
+
+    // Close the database connection
+    DDroneSession.close();
+
+
+
     return;
 }
