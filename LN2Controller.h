@@ -39,6 +39,7 @@ public:
     float currentTemperature;
     unsigned long timeInCurrentState;
     float overflowVoltage;
+    bool LN2Interlock;
 
     std::string SQLStatusMsg;
 

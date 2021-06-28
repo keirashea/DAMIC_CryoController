@@ -124,7 +124,12 @@ void LN2Controller::ReadOverflowVoltage(){
 void LN2Controller::WriteSMState(int smState){
 
     std::string ArdLn2_String;
-    std::string cmd = "s" + std::to_string(smState);
+    std::string cmd;
+
+    if (this->LN2Interlock)
+         cmd = "s" + std::to_string(smState);
+    else 
+         cmd = "s2";
 
     // Write to arduino
     this->WriteString(cmd);
@@ -164,11 +169,12 @@ void LN2Controller::UpdateMysql(void ){
 
     // Get watchdog fuse from control parameters
     mysqlx::Table CtrlParameterTable = DDatabase.getTable("ControlParameters");
-    mysqlx::RowResult CtrlRowResult = CtrlParameterTable.select("WatchDogFuse", "SMState")
+    mysqlx::RowResult CtrlRowResult = CtrlParameterTable.select("WatchDogFuse", "SMState", "LN2ValveInterLock")
             .bind("IDX", 1).execute();
     mysqlx::Row CtrlRow = CtrlRowResult.fetchOne();
     this->WatchdogFuse = (bool) CtrlRow[0];
     this->smState = CtrlRow[1];
+    this->LN2Interlock = (bool) CtrlRow[2];
 
     // Get the LN2 table to update and insert values
     mysqlx::Table LN2ControllerTable = DDatabase.getTable("LN2ControllerState");

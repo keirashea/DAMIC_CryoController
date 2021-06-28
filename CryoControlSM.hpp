@@ -18,12 +18,11 @@
 #include <iomanip>
 #include <ctime>
 
-
 #define RateMovingAvgN 20
-#define DeltaTRatePerMin 3.0
+#define DeltaTRatePerMin 1.0
 
-
-struct DataPacket{
+struct DataPacket
+{
 
     double kpA;
     double kiA;
@@ -34,7 +33,8 @@ struct DataPacket{
     double kdR;
 
     double targetTemp;
-    double currentTemp;
+    double currentTempK1;
+    double currentTempK2;
 
     double PID;
     double SystemState;
@@ -43,39 +43,41 @@ struct DataPacket{
 
     time_t LastArduinoTime;
 
+    bool SRSPowerState;
+    bool LN2ValveInterLock;
 };
 
-
-class CryoControlSM {
+class CryoControlSM
+{
 
 private:
-
-
     double LastTemperature;
     unsigned long TimeStamp;
-
 
     double TInput, TOutput;
     double RInput, ROutput;
 
     /*SM variables and memory*/
-    double KpA=2, KiA=5, KdA=1;
-    double KpR=2, KiR=5, KdR=1;
+    double KpA = 2, KiA = 5, KdA = 1;
+    double KpR = 2, KiR = 5, KdR = 1;
 
     /*Process related variables*/
-    double ThisRunPIDValue=0.0;
-    double ThisRunHeaterPower=0.0;
-    double CurrentTemperature=0.0;
-    double SetTemperature=0.0;
-    double TemperatureRateMovingAvg=0.0;
-    double RSetpoint=0.0;
+    double ThisRunPIDValue = 0.0;
+    double ThisRunHeaterPower = 0.0;
+    double CurrentTemperature = 0.0;
+    double SetTemperature = 0.0;
+    double TemperatureRateMovingAvg = 0.0;
+    double TemperatureMovingAvgK1 = 0.0;
+    double TemperatureMovingAvgK2 = 0.0;
+    double RSetpoint = 0.0;
 
-    double TemperatureMovingAvg= 298.0;
+    double TemperatureMovingAvg = 0.0;
+    bool ColdSwitchState = 0;
 
     time_t LastArduinoTime;
     time_t NowTime;
 
-
+    bool ComputedSRSPowerState = 0;
 
     /* ***********************************************************
      *We have two different PIDs.
@@ -86,8 +88,8 @@ private:
      *2. For controlling the rate of ascent or descent of temperature
      * ***********************************************************/
 
-    PID* AbsPID;
-    PID* RatePID;
+    PID *AbsPID;
+    PID *RatePID;
 
     /*SM Functions and states*/
     void UpdateVars(DataPacket &);
@@ -95,11 +97,13 @@ private:
     void Idle(void);
     void CoolDown(void);
     void Warmup(void);
-    void Maintain(void);
+    void MaintainWarm(void);
+    void MaintainCold(void);
     void Fault(void);
 
     /*Enum values of all the states that the FSM can be in*/
-    enum FSMStates {
+    enum FSMStates
+    {
         ST_Idle,
         ST_CoolDown,
         ST_Warmup,
@@ -108,27 +112,23 @@ private:
         ST_Fault
     };
 
-
-
     /*Jump table function for the FSM states and the function pointer to the current state*/
-    std::map<FSMStates, void (CryoControlSM::*)( void)> STFnTable;
-    void (CryoControlSM::* CryoStateFn)(void);
+    std::map<FSMStates, void (CryoControlSM::*)(void)> STFnTable;
+    void (CryoControlSM::*CryoStateFn)(void);
 
     FSMStates CurrentFSMState;
     FSMStates ShouldBeFSMState;
 
-    void StateDecision( void);
-    void StateSwitch (void );
+    void StateDecision(void);
+    void StateSwitch(void);
 
-    bool EntryGuardActive=false;
-    bool ExitGuardActive=false;
-    bool FSMMode=AUTOMATIC;
-
+    bool EntryGuardActive = false;
+    bool ExitGuardActive = false;
+    bool FSMMode = AUTOMATIC;
 
 public:
-
     CryoControlSM();
-    ~CryoControlSM(void );
+    ~CryoControlSM(void);
 
     /*The SM Engine to be run at every time interval*/
     void SMEngine(void);
@@ -146,8 +146,6 @@ public:
     double getSentCCPower(void);
 
     void PostRunSanityCheck(void);
-
-
 };
 
 #endif /* CryoControlSM_hpp */
