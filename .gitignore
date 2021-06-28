@@ -12,6 +12,11 @@ StartSM
 ArdHeaterDrone
 PfeifferDroneStart
 LN2DroneStart
+temp/
+SRSSrv
+PyRTD/
+ArdTemp
+rpclib/
 
 .idea
 cmake-build-debug
