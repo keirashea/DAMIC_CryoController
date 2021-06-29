@@ -76,7 +76,7 @@ void CryoControlSM::SMEngine(void)
     }
 
     /*Last sweep times*/
-    this->LastArduinoTime = _thisDataSweep.LastArduinoTime;
+    this->LastHeaterArduinoTime = _thisDataSweep.LastHeaterArduinoTime;
 
     /*Temperature set point changes*/
     if (_thisDataSweep.targetTemp != this->SetTemperature)
@@ -111,7 +111,12 @@ void CryoControlSM::SMEngine(void)
     if (_thisDataSweep.currentTempK2 > 10 && _thisDataSweep.currentTempK2 < 500)
         this->TemperatureMovingAvgK2 += (_thisDataSweep.currentTempK2 - this->TemperatureMovingAvgK2) / RateMovingAvgN;
 
-    
+    // LN overflow voltage
+    this->OverflowVoltage = _thisDataSweep.overflowVoltage;
+    // Compute the time in the current LN2 valve state
+    time(&NowTime);
+    TimeInCurrentLNState += difftime(NowTime, PreviousTime);
+    PreviousTime = NowTime;
 
     /*Decide what state the system should be in. Then run the function to switch state if needed.*/
     this->StateDecision();
@@ -138,7 +143,7 @@ void CryoControlSM::PostRunSanityCheck(void)
     if (this->TemperatureMovingAvg > 320 || this->CurrentTemperature > 350)
     {
         this->ThisRunHeaterPower = 0.0;
-        this->ColdSwitchState = 0;
+        this->LN2Interlock = 1;
     }
 }
 
@@ -176,7 +181,7 @@ void CryoControlSM::StateDecision(void)
      * If the arduino is not responding
      */
     time(&NowTime);
-    int LastDeltaArdHeater = difftime(NowTime, this->LastArduinoTime);
+    int LastDeltaArdHeater = difftime(NowTime, this->LastHeaterArduinoTime);
 
     if (LastDeltaArdHeater > 30 && LastDeltaArdHeater < 60)
         printf("There has been no communication from the Arduino heater for (%d) seconds!\n", LastDeltaArdHeater);
@@ -217,7 +222,7 @@ void CryoControlSM::Warmup(void)
         this->RSetpoint = DeltaTRatePerMin / 60.0;
 
         /*Cold switch off*/
-        this->ColdSwitchState = 0;
+        this->LN2Interlock = 1;
 
         /*Turn SRS off*/
         this->ComputedSRSPowerState = 0;
@@ -244,7 +249,7 @@ void CryoControlSM::Idle(void)
         this->RatePID->SetMode(MANUAL);
 
         /*Cold switch off*/
-        this->ColdSwitchState = 0;
+        this->LN2Interlock = 1;
 
         /*Turn SRS off*/
         this->ComputedSRSPowerState = 0;
@@ -269,7 +274,7 @@ void CryoControlSM::Fault(void)
         this->RatePID->SetMode(MANUAL);
 
         /*Cold switch off*/
-        this->ColdSwitchState = 0;
+        this->LN2Interlock = 1;
 
         /*Turn SRS off*/
         this->ComputedSRSPowerState = 0;
@@ -304,8 +309,24 @@ void CryoControlSM::CoolDown(void)
         /*Set the correct rate direction for the rate*/
         this->RSetpoint = -1.0 * DeltaTRatePerMin / 60.0; // degrees per sec
 
-        /*Cold switch ON*/
-        this->ColdSwitchState = 1;
+        /*LN interlock off*/
+        this->LN2Interlock = 0;
+
+        if(ThisRunValveState == 0 && TimeInCurrentLNState > TimeBetweenFillCooldown*60){
+            ThisRunValveState = 1;
+            TimeInCurrentLNState = 0;
+        }
+
+        if(!IsOverflow && OverflowVoltage > LN2OverflowVoltageThreshold){
+            IsOverflow = 1;
+            TimeInCurrentLNState;
+        }
+
+        if(IsOverflow && TimeInCurrentLNState > TimeAfterOverflow*60){
+            ThisRunValveState = 0;
+            IsOverflow = 0;
+            TimeInCurrentLNState = 0;
+        }
 
         /*Turn SRS off*/
         this->ComputedSRSPowerState = 0;
@@ -332,7 +353,7 @@ void CryoControlSM::MaintainWarm(void)
         this->RatePID->SetMode(MANUAL);
 
         /*Cold switch off*/
-        this->ColdSwitchState = 0;
+        this->LN2Interlock = 1;
 
         /*Turn SRS ON if */
         this->ComputedSRSPowerState = 0;
@@ -359,7 +380,24 @@ void CryoControlSM::MaintainCold(void)
         this->RatePID->SetMode(MANUAL);
 
         /*Cold switch off*/
-        this->ColdSwitchState = 1;
+        this->LN2Interlock = 0;
+
+        if(ThisRunValveState == 0 && TimeInCurrentLNState > TimeBetweenFillMaintainCold*60){
+            ThisRunValveState = 1;
+            TimeInCurrentLNState = 0;
+        }
+
+        if(!IsOverflow && OverflowVoltage > LN2OverflowVoltageThreshold){
+            IsOverflow = 1;
+            TimeInCurrentLNState;
+        }
+
+        if(IsOverflow && TimeInCurrentLNState > TimeAfterOverflow*60){
+            ThisRunValveState = 0;
+            IsOverflow = 0;
+            TimeInCurrentLNState = 0;
+        }
+
 
         /*Turn SRS ON if */
         this->ComputedSRSPowerState = 1;

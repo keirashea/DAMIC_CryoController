@@ -46,10 +46,18 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     mysqlx::Row ArdHeatRow = ArdHeatRowResult.fetchOne();
 
     // Parse the mysql data into data struct
-    if (ArdHeatRow[0].getType() > 0) _thisInteractionData.LastArduinoTime = (long) ArdHeatRow[0];
+    if (ArdHeatRow[0].getType() > 0) _thisInteractionData.LastHeaterArduinoTime = (long) ArdHeatRow[0];
     _thisInteractionData.currentTempK1 = ArdHeatRow[1];
     _thisInteractionData.currentTempK2 = ArdHeatRow[2];
 
+    // Get overflow voltage from LN2 Arduino
+    mysqlx::Table LNControllerTable = DDb.getTable("LN2ControllerState");
+    mysqlx::RowResult LNControllerRowResult = LNControllerTable.select("UNIX_TIMESTAMP(Time)", "OverflowVoltage").orderBy("Time DESC").limit(1).execute();
+    mysqlx::Row LNControllerRow = LNControllerRowResult.fetchOne();
+
+    // Parse LN2
+    _thisInteractionData.LastLNArduinoTime = LNControllerRow[0];
+    _thisInteractionData.overflowVoltage = LNControllerRow[1];
     
     /*Now update the monitoring table*/
     
@@ -84,14 +92,13 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     }
 
     //Update the LN2Valve if needed;
-    if (_thisInteractionData.LN2ValveInterLock != this->ColdSwitchState){
-        SCResult= SendControl.update().set("LN2ValveInterLock",this->ColdSwitchState).where("IDX=1").execute();
-        warnings+=SCResult.getWarningsCount();
+    SCResult= SendControl.update()
+                             .set("LN2ValveInterLock",this->LN2Interlock)
+                             .set("LN2ValveState", this->ThisRunValveState)
+                             .where("IDX=1").execute();
         
-        //Debug
-        printf("LN2 state switched %d\n",this->ColdSwitchState);
-        
-    }
+    warnings+=SCResult.getWarningsCount();
+
 
 
     if (warnings != 0) std::cout<<"SQL Generated warnings! \n";

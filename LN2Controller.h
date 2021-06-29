@@ -7,9 +7,10 @@
 
 // Includes
 #include <iostream>
+#include <ctime>
+#include "UtilityFunctions.hpp"
 #include "SerialDeviceT.hpp"
 
-#define OVERFLOW_THRESHOLD 2.5
 
 class LN2Controller: public SerialDevice {
 
@@ -19,25 +20,17 @@ public:
     ~LN2Controller();
 
     // Get functions
-    void ReadValveState();
-    void ReadTimeInCurrentState();
-    void ReadTimeBetweenFillState();
     void ReadOverflowVoltage();
 
     // Set functions
-    void WriteSMState(int smState);
-    void WriteCurrentTemperature(float temperature);
+    void WriteValveState();
+    void SendHeartbeat();
 
     // Other functions
     void UpdateMysql(void );
 
     bool WatchdogFuse;
-    bool valveState;
-    bool isOverflow;
-    int smState;
-    int timeBetweenFillState;
-    float currentTemperature;
-    unsigned long timeInCurrentState;
+    int ValveState;
     float overflowVoltage;
     bool LN2Interlock;
 

@@ -21,11 +21,8 @@
 
 LN2Controller::LN2Controller(){
     this->WatchdogFuse = 1;
-    this->valveState = 0;
-    this->timeBetweenFillState = 0;
+    this->ValveState = 0;
     this->overflowVoltage = 0;
-    this->timeInCurrentState = 0;
-    this->isOverflow = 0;
 
     printf("Dummy instance of class. No serial communication available");
 }
@@ -48,11 +45,8 @@ LN2Controller::LN2Controller(std::string SerialPort) : SerialDevice(SerialPort){
 
 
         this->WatchdogFuse = 1;
-        this->valveState = 0;
-        this->timeBetweenFillState = 0;
+        this->ValveState = 0;
         this->overflowVoltage = 0;
-        this->timeInCurrentState = 0;
-        this->isOverflow = 0;
 
         printf("Liquid Nitrogen Controller is now ready to accept instructions.\n");
 }
@@ -61,49 +55,7 @@ LN2Controller::~LN2Controller(){
     close(USB);
 };
 
-// Get functions
-void LN2Controller::ReadValveState(){
-    // Gets the valve state from the arduino (1 = open, 0 = close)
-    std::string ArdLn2_String;
-    std::string cmd = "v";
-
-    this->WriteString(cmd);
-    ArdLn2_String = this->ReadLine();
-
-    try {
-        this->valveState = std::stoi(ArdLn2_String);
-    } catch(...){
-        printf("Error in GetValveState. Continuing...\n");
-    }
-}
-
-void LN2Controller::ReadTimeInCurrentState(){
-    // Gets the time in the current state in seconds
-    std::string ArdLn2_String;
-    std::string cmd = "c";
-
-    this->WriteString(cmd);
-    ArdLn2_String = this->ReadLine();
-
-    try {
-        this->timeInCurrentState = std::stoi(ArdLn2_String) / 1000;
-    } catch(...){
-        printf("Error in ReadTimeInCurrentState. Continuing...\n");
-    }
-}
-void LN2Controller::ReadTimeBetweenFillState(){
-    std::string ArdLn2_String;
-    std::string cmd = "b";
-
-    this->WriteString(cmd);
-    ArdLn2_String = this->ReadLine();
-
-    try {
-        this->timeBetweenFillState = std::stoi(ArdLn2_String);
-    } catch(...){
-        printf("Error in GetTimeBetweenFillState. Continuing...\n");
-    }
-}
+// Read functions
 void LN2Controller::ReadOverflowVoltage(){
     std::string ArdLn2_String;
     std::string cmd = "o";
@@ -114,37 +66,30 @@ void LN2Controller::ReadOverflowVoltage(){
     try {
         this->overflowVoltage = std::stof(ArdLn2_String);
     } catch(...){
-        printf("Error in GetTimeBetweenFillState. Continuing...\n");
+        printf("Error in Reading Overflow Voltage. Continuing...\n");
     }
 
-    this->isOverflow = overflowVoltage > OVERFLOW_THRESHOLD;
 }
 
-// Set functions
-void LN2Controller::WriteSMState(int smState){
+// Write Functions
+void LN2Controller::WriteValveState(){
 
-    std::string ArdLn2_String;
-    std::string cmd;
+    // Sets the valve state on the arduino (1 = open, 0 = close)
+    std::string cmd = "v" + std::to_string(ValveState && !LN2Interlock);
 
-    if (this->LN2Interlock)
-         cmd = "s" + std::to_string(smState);
-    else 
-         cmd = "s2";
-
-    // Write to arduino
+    // Write data to arduino
     this->WriteString(cmd);
-    // this->
+
+    return;
 }
-void LN2Controller::WriteCurrentTemperature(float temperature){
 
-    std::string ArdLn2_String;
-    std::string cmd = "t" + std::to_string(temperature);
+void LN2Controller::SendHeartbeat(){
 
-    // Write to arduino
+    std::string cmd = "h";
+
     this->WriteString(cmd);
 }
 
-// Other functions
 void LN2Controller::UpdateMysql(void ){
 
 
@@ -160,26 +105,20 @@ void LN2Controller::UpdateMysql(void ){
     // mysqlx::Row SMRow = SMRowResult.fetchOne();
     // this->smState = SMRow[0];
 
-    // Get temperature from heater database
-    mysqlx::Table HeaterParameterTable = DDatabase.getTable("ArduinoHeaterState");
-    mysqlx::RowResult HeaterRowResult = HeaterParameterTable.select("TemperatureK2", "TemperatureK1")
-            .orderBy("IDX DESC").limit(1).execute();
-    mysqlx::Row HeaterRow = HeaterRowResult.fetchOne();
-    this->currentTemperature = (double) HeaterRow[0] > 0 ? (double)HeaterRow[0] : (double)HeaterRow[1];
 
     // Get watchdog fuse from control parameters
     mysqlx::Table CtrlParameterTable = DDatabase.getTable("ControlParameters");
-    mysqlx::RowResult CtrlRowResult = CtrlParameterTable.select("WatchDogFuse", "SMState", "LN2ValveInterLock")
+    mysqlx::RowResult CtrlRowResult = CtrlParameterTable.select("WatchDogFuse", "LN2ValveInterLock", "LN2ValveState")
             .bind("IDX", 1).execute();
     mysqlx::Row CtrlRow = CtrlRowResult.fetchOne();
     this->WatchdogFuse = (bool) CtrlRow[0];
-    this->smState = CtrlRow[1];
-    this->LN2Interlock = (bool) CtrlRow[2];
+    this->LN2Interlock = (bool) CtrlRow[1];
+    this->ValveState = CtrlRow[2];
 
     // Get the LN2 table to update and insert values
     mysqlx::Table LN2ControllerTable = DDatabase.getTable("LN2ControllerState");
-    mysqlx::Result LN2ControllerResult = LN2ControllerTable.insert("ValveState", "TimeBetweenFillState", "TimeInCurrentState", "SMState", "CurrentTemperature", "OverflowVoltage")
-            .values(this->valveState, this->timeBetweenFillState, this->timeInCurrentState, this->smState, this->currentTemperature, this->overflowVoltage).execute();
+    mysqlx::Result LN2ControllerResult = LN2ControllerTable.insert("ValveState", "OverflowVoltage")
+            .values(this->ValveState, this->overflowVoltage).execute();
 
     // Check to see if values were inserted properly
     unsigned int warnings = LN2ControllerResult.getWarningsCount();

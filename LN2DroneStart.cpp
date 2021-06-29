@@ -22,31 +22,30 @@ int main(int argc, char ** argv){
     while (true) {
 
         // Read current parameters
-        LN2Control->ReadValveState();
-        LN2Control->ReadTimeInCurrentState();
-        LN2Control->ReadTimeBetweenFillState();
         LN2Control->ReadOverflowVoltage();
+        LN2Control->SendHeartbeat();
 
         // Update SQL
         LN2Control->UpdateMysql();
 
-        // Send database dependent parameters
-        LN2Control->WriteSMState(LN2Control->smState);
-        LN2Control->WriteCurrentTemperature(LN2Control->currentTemperature);
+        // Write valve state
+        LN2Control->WriteValveState();
 
         // Implement watchdog -- shuts off liquid nitrogen supplies by forcing state into idle
         if(!LN2Control->WatchdogFuse){
             fflush(stdout);
             printf("\r-------Watchdog fuse blown, system protection active.-----\n");
-            LN2Control->WriteSMState(0);
+            LN2Control->ValveState = 0;
+            LN2Control->WriteValveState();
             LN2Control->WatchdogFuse = 0;
             sleep(1);
             continue;
         }
 
         fflush(stdout);
-        printf("\rLiquid Nitrogen Control | Valve State: %i, Time in State (s): %lu, Time Between Fills State: %i, Overflow Pin (V): %0.2f, Is Overflow? %i, SMState: %i, Temp (K): %0.2f",
-                LN2Control->valveState, LN2Control->timeInCurrentState, LN2Control->timeBetweenFillState, LN2Control->overflowVoltage, LN2Control->isOverflow, LN2Control->smState, LN2Control->currentTemperature);
+        printf("\rLiquid Nitrogen Control | Valve State: %i, Overflow Pin (V): %0.2f, Valve Interlock: %i ",
+                LN2Control->ValveState, LN2Control->overflowVoltage, LN2Control->LN2Interlock);
+        advance_cursor();
 
         sleep(2);
     }

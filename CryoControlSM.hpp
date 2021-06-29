@@ -20,6 +20,10 @@
 
 #define RateMovingAvgN 20
 #define DeltaTRatePerMin 1.0
+#define TimeBetweenFillCooldown 60 // minutes
+#define TimeBetweenFillMaintainCold 180 // minutes
+#define TimeAfterOverflow 4 // minute
+#define LN2OverflowVoltageThreshold 2.5
 
 struct DataPacket
 {
@@ -41,7 +45,10 @@ struct DataPacket
 
     bool WatchdogFuse;
 
-    time_t LastArduinoTime;
+    double overflowVoltage;
+
+    time_t LastHeaterArduinoTime;
+    time_t LastLNArduinoTime;
 
     bool SRSPowerState;
     bool LN2ValveInterLock;
@@ -70,11 +77,20 @@ private:
     double TemperatureMovingAvgK1 = 0.0;
     double TemperatureMovingAvgK2 = 0.0;
     double RSetpoint = 0.0;
+    
+    // LN2 Variables
+    int ThisRunValveState = 0;
+    double OverflowVoltage = 0;
+    bool LN2Interlock = 0;
+    int TimeInCurrentLNState = 0;
+    bool IsOverflow = 0;
 
     double TemperatureMovingAvg = 0.0;
-    bool ColdSwitchState = 0;
 
-    time_t LastArduinoTime;
+
+    time_t LastHeaterArduinoTime;
+    time_t LastLNArduinoTime;
+    time_t PreviousTime;
     time_t NowTime;
 
     bool ComputedSRSPowerState = 0;
