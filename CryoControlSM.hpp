@@ -18,12 +18,13 @@
 #include <iomanip>
 #include <ctime>
 
-#define RateMovingAvgN 20
+#define RateMovingAvgN 40
 #define DeltaTRatePerMin 1.0
-#define TimeBetweenFillCooldown 60 // minutes
-#define TimeBetweenFillMaintainCold 180 // minutes
-#define TimeAfterOverflow 4 // minute
-#define LN2OverflowVoltageThreshold 2.5
+#define TimeBetweenFillCooldown 20.0 // minutes
+#define TimeBetweenFillMaintainCold 70.0 // minutes
+#define TimeAfterOverflow 2.0 // minute
+#define LN2OverflowVoltageThreshold 2.55
+#define TopRTDFilledThreshold 101
 
 struct DataPacket
 {
@@ -52,6 +53,12 @@ struct DataPacket
 
     bool SRSPowerState;
     bool LN2ValveInterLock;
+
+    //cup RTDs
+    float CupTempR0;
+    float CupTempR1;
+    float CupTempT0;
+    float CupTempT1;
 };
 
 class CryoControlSM
@@ -77,20 +84,27 @@ private:
     double TemperatureMovingAvgK1 = 0.0;
     double TemperatureMovingAvgK2 = 0.0;
     double RSetpoint = 0.0;
-    
+
     // LN2 Variables
     int ThisRunValveState = 0;
     double OverflowVoltage = 0;
     bool LN2Interlock = 0;
-    int TimeInCurrentLNState = 0;
+    long TimeInCurrentLNState = 0;
     bool IsOverflow = 0;
+
+    //cup temp
+    double CupTempAvgTop = 300;
+    double CupTempAvgMid = 300;
+    double CupRAvgTop = 0;
+    double CupRAvgMid = 0;
+    double CupControlTempAvgLast;
 
     double TemperatureMovingAvg = 0.0;
 
 
     time_t LastHeaterArduinoTime;
     time_t LastLNArduinoTime;
-    time_t PreviousTime;
+    time_t PreviousTime = 0;
     time_t NowTime;
 
     bool ComputedSRSPowerState = 0;
@@ -141,6 +155,7 @@ private:
     bool EntryGuardActive = false;
     bool ExitGuardActive = false;
     bool FSMMode = AUTOMATIC;
+    bool hotToCold = false;
 
 public:
     CryoControlSM();
@@ -157,9 +172,11 @@ public:
     double getTemperatureRate(void);
     double getTemperatureSP(void);
     double getTRateSP(void);
+    int getTimeInCurrentLNState(void) {return this->TimeInCurrentLNState;};
     int getCurrentState(void);
     int getShouldBeState(void);
     double getSentCCPower(void);
+    double getCupTempTop(void) {return this->CupTempAvgTop;};
 
     void PostRunSanityCheck(void);
 };

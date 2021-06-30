@@ -88,8 +88,9 @@ void CryoControlSM::SMEngine(void)
     /*Now update the current and the last temperature. Also update the rate of change of temperature with the new information.*/
     this->LastTemperature = this->CurrentTemperature;
 
-/*REDO: Logic to decide if the LSH RTD is unplugged. An unplugged RTD will show a temperature
+    /*REDO: Logic to decide if the LSH RTD is unplugged. An unplugged RTD will show a temperature
      *of ???*/
+
     if (_thisDataSweep.currentTempK2 < 350 && _thisDataSweep.currentTempK2 > 0)
     {
         this->CurrentTemperature = _thisDataSweep.currentTempK2;
@@ -113,9 +114,17 @@ void CryoControlSM::SMEngine(void)
 
     // LN overflow voltage
     this->OverflowVoltage = _thisDataSweep.overflowVoltage;
+
+    //cup resistance top
+    if (_thisDataSweep.CupTempR0 > 0 && _thisDataSweep.CupTempR0<130){
+        this->CupTempAvgTop += (_thisDataSweep.CupTempT0 - this->CupTempAvgTop) / RateMovingAvgN;
+   	//this->CupRAvgTop += (_thisDataSweep.CupTempR0 - this->CupRAvgTop) / RateMovingAvgN;
+    }
+    this->CupControlTempAvgLast = this->CupTempAvgTop;
+
     // Compute the time in the current LN2 valve state
     time(&NowTime);
-    TimeInCurrentLNState += difftime(NowTime, PreviousTime);
+    this->TimeInCurrentLNState += difftime(NowTime, PreviousTime);
     PreviousTime = NowTime;
 
     /*Decide what state the system should be in. Then run the function to switch state if needed.*/
@@ -166,8 +175,9 @@ void CryoControlSM::StateDecision(void)
         this->ShouldBeFSMState = ST_Warmup;
 
     /*Cooldown while the current temperature is high - i.e. >220 K*/
-    if (this->SetTemperature < this->CurrentTemperature - 10)
+    if (this->SetTemperature < this->CurrentTemperature - 10){
         this->ShouldBeFSMState = ST_CoolDown;
+    }
 
     /*Maintain a cold state once the temperature is within 10 K of set point*/
     if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 10 && this->SetTemperature < 220)
@@ -177,7 +187,7 @@ void CryoControlSM::StateDecision(void)
     if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 10 && this->SetTemperature >= 220)
         this->ShouldBeFSMState = ST_MaintainWarm;
 
-    /* 
+    /*
      * If the arduino is not responding
      */
     time(&NowTime);
@@ -312,21 +322,7 @@ void CryoControlSM::CoolDown(void)
         /*LN interlock off*/
         this->LN2Interlock = 0;
 
-        if(ThisRunValveState == 0 && TimeInCurrentLNState > TimeBetweenFillCooldown*60){
-            ThisRunValveState = 1;
-            TimeInCurrentLNState = 0;
-        }
 
-        if(!IsOverflow && OverflowVoltage > LN2OverflowVoltageThreshold){
-            IsOverflow = 1;
-            TimeInCurrentLNState;
-        }
-
-        if(IsOverflow && TimeInCurrentLNState > TimeAfterOverflow*60){
-            ThisRunValveState = 0;
-            IsOverflow = 0;
-            TimeInCurrentLNState = 0;
-        }
 
         /*Turn SRS off*/
         this->ComputedSRSPowerState = 0;
@@ -337,6 +333,28 @@ void CryoControlSM::CoolDown(void)
     /*Calculate Rate PID*/
     this->RatePID->Compute();
     this->ThisRunPIDValue = this->ROutput;
+
+    // Perform LN2 valve determination
+    if(ThisRunValveState == 0 && (this->TimeInCurrentLNState > TimeBetweenFillCooldown*60 || this->CurrentTemperature > 270)){
+            ThisRunValveState = 1;
+            this->TimeInCurrentLNState = 0;
+    }
+
+    //if(!IsOverflow && OverflowVoltage > LN2OverflowVoltageThreshold && ThisRunValveState == 1){
+    //    IsOverflow = 1;
+    //    this->TimeInCurrentLNState = 0;
+    //}
+
+    if(!IsOverflow && this->CupTempAvgTop < TopRTDFilledThreshold && ThisRunValveState == 1){
+        IsOverflow = 1;
+        this->TimeInCurrentLNState = 0;
+    }
+
+    if(IsOverflow && this->TimeInCurrentLNState > TimeAfterOverflow*60 && ThisRunValveState == 1 ){
+        ThisRunValveState = 0;
+        IsOverflow = 0;
+        this->TimeInCurrentLNState = 0;
+    }
 }
 
 void CryoControlSM::MaintainWarm(void)
@@ -382,24 +400,7 @@ void CryoControlSM::MaintainCold(void)
         /*Cold switch off*/
         this->LN2Interlock = 0;
 
-        if(ThisRunValveState == 0 && TimeInCurrentLNState > TimeBetweenFillMaintainCold*60){
-            ThisRunValveState = 1;
-            TimeInCurrentLNState = 0;
-        }
-
-        if(!IsOverflow && OverflowVoltage > LN2OverflowVoltageThreshold){
-            IsOverflow = 1;
-            TimeInCurrentLNState;
-        }
-
-        if(IsOverflow && TimeInCurrentLNState > TimeAfterOverflow*60){
-            ThisRunValveState = 0;
-            IsOverflow = 0;
-            TimeInCurrentLNState = 0;
-        }
-
-
-        /*Turn SRS ON if */
+                /*Turn SRS ON if */
         this->ComputedSRSPowerState = 1;
 
         this->EntryGuardActive = false;
@@ -408,6 +409,29 @@ void CryoControlSM::MaintainCold(void)
     /*Calculate PID*/
     this->AbsPID->Compute();
     this->ThisRunPIDValue = this->TOutput;
+
+    // LN2 Valve decision
+    if(ThisRunValveState == 0 && this->TimeInCurrentLNState > TimeBetweenFillMaintainCold*60){
+        ThisRunValveState = 1;
+        this->TimeInCurrentLNState = 0;
+    }
+
+    //if(!IsOverflow && OverflowVoltage > LN2OverflowVoltageThreshold && ThisRunValveState == 1){
+    //    IsOverflow = 1;
+    //    TimeInCurrentLNState = 0;
+    //}
+
+    if(!IsOverflow && this->CupTempAvgTop < TopRTDFilledThreshold && ThisRunValveState == 1){
+        IsOverflow = 1;
+        this->TimeInCurrentLNState = 0;
+    }
+
+
+    if(IsOverflow && this->TimeInCurrentLNState > TimeAfterOverflow*60 && ThisRunValveState == 1 ){
+        ThisRunValveState = 0;
+        IsOverflow = 0;
+        this->TimeInCurrentLNState = 0;
+    }
 }
 
 /*The functions to access a copy of variables for viewing*/

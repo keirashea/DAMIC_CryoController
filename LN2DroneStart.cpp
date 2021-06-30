@@ -43,8 +43,8 @@ int main(int argc, char ** argv){
         }
 
         fflush(stdout);
-        printf("\rLiquid Nitrogen Control | Valve State: %i, Overflow Pin (V): %0.2f, Valve Interlock: %i ",
-                LN2Control->ValveState, LN2Control->overflowVoltage, LN2Control->LN2Interlock);
+        printf("\rLiquid Nitrogen Control | Valve State: %i, Overflow Pin (V): %0.2f, Valve Interlock: %i, Valve Open: %i ",
+                LN2Control->ValveState, LN2Control->overflowVoltage, LN2Control->LN2Interlock, LN2Control->ValveState && !LN2Control->LN2Interlock );
         advance_cursor();
 
         sleep(2);
