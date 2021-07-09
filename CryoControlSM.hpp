@@ -18,13 +18,14 @@
 #include <iomanip>
 #include <ctime>
 
-#define RateMovingAvgN 40
+#define RateMovingAvgN 20
 #define DeltaTRatePerMin 1.0
 #define TimeBetweenFillCooldown 20.0 // minutes
-#define TimeBetweenFillMaintainCold 70.0 // minutes
-#define TimeAfterOverflow 2.0 // minute
+#define TimeBetweenFillMaintainCold 90.0 // minutes
+#define TimeAfterOverflow 0.5// minute
 #define LN2OverflowVoltageThreshold 2.55
 #define TopRTDFilledThreshold 101
+#define MinimumTimeBeforeOverflow 8.0 // minutes
 
 struct DataPacket
 {

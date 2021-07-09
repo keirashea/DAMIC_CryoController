@@ -345,7 +345,7 @@ void CryoControlSM::CoolDown(void)
     //    this->TimeInCurrentLNState = 0;
     //}
 
-    if(!IsOverflow && this->CupTempAvgTop < TopRTDFilledThreshold && ThisRunValveState == 1){
+    if(!IsOverflow && this->CupTempAvgTop < TopRTDFilledThreshold && ThisRunValveState == 1 && this->TimeInCurrentLNState > MinimumTimeBeforeOverflow*60){
         IsOverflow = 1;
         this->TimeInCurrentLNState = 0;
     }
@@ -421,7 +421,7 @@ void CryoControlSM::MaintainCold(void)
     //    TimeInCurrentLNState = 0;
     //}
 
-    if(!IsOverflow && this->CupTempAvgTop < TopRTDFilledThreshold && ThisRunValveState == 1){
+    if(!IsOverflow && this->CupTempAvgTop < TopRTDFilledThreshold && ThisRunValveState == 1 && this->TimeInCurrentLNState > MinimumTimeBeforeOverflow*60){
         IsOverflow = 1;
         this->TimeInCurrentLNState = 0;
     }
