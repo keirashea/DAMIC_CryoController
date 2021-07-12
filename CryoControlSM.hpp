@@ -26,6 +26,7 @@
 #define LN2OverflowVoltageThreshold 2.55
 #define TopRTDFilledThreshold 101
 #define MinimumTimeBeforeOverflow 8.0 // minutes
+#define MaximumValveOpenTime 60 // minutes
 
 struct DataPacket
 {

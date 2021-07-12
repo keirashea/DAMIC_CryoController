@@ -170,23 +170,42 @@ void CryoControlSM::StateDecision(void)
     if (this->CurrentTemperature > 300 && this->SetTemperature < 300)
         this->ShouldBeFSMState = ST_Idle; //this should never happen in practice. If it does, then idle.
 
-    if (this->SetTemperature > this->CurrentTemperature + 10 &&
+    if (this->SetTemperature > this->CurrentTemperature + 20 &&
         this->CurrentTemperature < 300)
         this->ShouldBeFSMState = ST_Warmup;
 
-    /*Cooldown while the current temperature is high - i.e. >220 K*/
-    if (this->SetTemperature < this->CurrentTemperature - 10){
-        this->ShouldBeFSMState = ST_CoolDown;
+    /*Cooldown while the current temperature is high - currentTemp > setTemp*/
+    if (this->SetTemperature < this->CurrentTemperature - 20){
+
+        // Check if system has run out of Ln2
+        if(this->ThisRunValveState == 1 && this->TimeInCurrentLNState > MaximumValveOpenTime*60){
+            this->ShouldBeFSMState = ST_Warmup;
+        }
+        else{
+            this->ShouldBeFSMState = ST_CoolDown;
+
+        }
     }
 
-    /*Maintain a cold state once the temperature is within 10 K of set point*/
-    if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 10 && this->SetTemperature < 220)
-        this->ShouldBeFSMState = ST_MaintainCold;
+    /*Maintain a cold state once the temperature is within 20 K of set point*/
+    if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 20 && this->SetTemperature < 220){
+        
+        // Check if system has run out of Ln2
+        if(this->ThisRunValveState == 1 && this->TimeInCurrentLNState > MaximumValveOpenTime*60){
+            this->ShouldBeFSMState = ST_Warmup;
+        }
+        else{
+            this->ShouldBeFSMState = ST_MaintainCold;
 
-    /*Maintain a warm state once the temperature is within 10 K of set point while warming up*/
-    if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 10 && this->SetTemperature >= 220)
+        }
+    }
+
+    /*Maintain a warm state once the temperature is within 20 K of set point while warming up*/
+    if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 20 && this->SetTemperature >= 220)
         this->ShouldBeFSMState = ST_MaintainWarm;
 
+
+    /* If LN2 valve has been open for more than MaximumValveOpenTime, switch to warmup */
     /*
      * If the arduino is not responding
      */
