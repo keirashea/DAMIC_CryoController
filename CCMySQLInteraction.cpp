@@ -13,6 +13,26 @@
 #include "CryoControlSM.hpp"
 #include <iostream>
 
+void CryoControlSM::UpdateTargetTemperature(double targetTemp){
+
+    // Connect to server using a connection URL
+    mysqlx::Session DDroneSession("localhost", 33060, DMysqlUser, DMysqlPass);
+    mysqlx::Schema DDb = DDroneSession.getSchema("DAMICDrone");
+
+    // Accessing an existing table
+    mysqlx::Table SendControl = DDb.getTable("ControlParameters");
+
+    // Update the target temperature
+    mysqlx::Result SCResult= SendControl.update()
+                             .set("TargetTemperature",targetTemp)
+                             .where("IDX=1").execute();
+
+    int warnings = SCResult.getWarningsCount();
+    if (warnings != 0) std::cout<<"SQL Generated warnings! \n";
+
+
+    return; 
+}
 
 void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
 

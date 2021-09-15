@@ -179,8 +179,9 @@ void CryoControlSM::StateDecision(void)
 
         // Check if system has run out of Ln2
         if(this->ThisRunValveState == 1 && this->TimeInCurrentLNState > MaximumValveOpenTime*60){
-            this->ShouldBeFSMState = ST_Warmup;
-        }
+            // Update target temperature
+            this->UpdateTargetTemperature(300);
+            this->ShouldBeFSMState = ST_Warmup;        }
         else{
             this->ShouldBeFSMState = ST_CoolDown;
 
@@ -192,6 +193,8 @@ void CryoControlSM::StateDecision(void)
         
         // Check if system has run out of Ln2
         if(this->ThisRunValveState == 1 && this->TimeInCurrentLNState > MaximumValveOpenTime*60){
+            // Update target temperature
+            this->UpdateTargetTemperature(300);
             this->ShouldBeFSMState = ST_Warmup;
         }
         else{
@@ -251,6 +254,7 @@ void CryoControlSM::Warmup(void)
         this->RSetpoint = DeltaTRatePerMin / 60.0;
 
         /*Cold switch off*/
+        this->ThisRunValveState = 0;
         this->LN2Interlock = 1;
 
         /*Turn SRS off*/
@@ -390,6 +394,7 @@ void CryoControlSM::MaintainWarm(void)
         this->RatePID->SetMode(MANUAL);
 
         /*Cold switch off*/
+        this->ThisRunValveState = 0;
         this->LN2Interlock = 1;
 
         /*Turn SRS ON if */

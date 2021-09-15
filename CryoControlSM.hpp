@@ -20,12 +20,12 @@
 
 #define RateMovingAvgN 20
 #define DeltaTRatePerMin 1.0
-#define TimeBetweenFillCooldown 20.0 // minutes
-#define TimeBetweenFillMaintainCold 90.0 // minutes
-#define TimeAfterOverflow 0.5// minute
+#define TimeBetweenFillCooldown 30.0 // minutes
+#define TimeBetweenFillMaintainCold 100.0 // minutes
+#define TimeAfterOverflow 0.1// minute
 #define LN2OverflowVoltageThreshold 2.55
 #define TopRTDFilledThreshold 101
-#define MinimumTimeBeforeOverflow 8.0 // minutes
+#define MinimumTimeBeforeOverflow 7.5 // minutes
 #define MaximumValveOpenTime 60 // minutes
 
 struct DataPacket
@@ -125,6 +125,7 @@ private:
 
     /*SM Functions and states*/
     void UpdateVars(DataPacket &);
+    void UpdateTargetTemperature(double );
 
     void Idle(void);
     void CoolDown(void);
