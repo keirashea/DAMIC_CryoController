@@ -42,10 +42,13 @@ int main(int argc, char ** argv){
             continue;
         }
 
-        fflush(stdout);
-        printf("\rLiquid Nitrogen Control | Valve State: %i, Overflow Pin (V): %0.2f, Valve Interlock: %i, Valve Open: %i ",
-                LN2Control->ValveState, LN2Control->overflowVoltage, LN2Control->LN2Interlock, LN2Control->ValveState && !LN2Control->LN2Interlock );
-        advance_cursor();
+
+        // std::cout << "Valve State: " << LN2Control->ValveState << std::endl;
+        // printf("Liquid Nitrogen Control | Valve State: %i, Overflow Pin (V): %0.2f, Valve Interlock: %i, Valve Open: %i \n",
+                // LN2Control->ValveState, LN2Control->overflowVoltage, LN2Control->LN2Interlock, LN2Control->ValveState && !LN2Control->LN2Interlock );
+	    //advance_cursor();
+        LN2Control->PrintStatus();
+        fflush(stdout);   
 
         sleep(2);
     }

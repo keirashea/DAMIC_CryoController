@@ -131,3 +131,10 @@ void LN2Controller::UpdateMysql(void ){
 
     return;
 }
+
+void LN2Controller::PrintStatus(){
+
+    printf("\rLiquid Nitrogen Control | Valve State: %i, Overflow Pin (V): %0.2f, Valve Interlock: %i, Valve Open: %i",
+        ValveState, overflowVoltage, LN2Interlock, ValveState && !LN2Interlock );
+    advance_cursor();
+}

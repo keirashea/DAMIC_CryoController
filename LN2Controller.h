@@ -28,6 +28,7 @@ public:
 
     // Other functions
     void UpdateMysql(void );
+    void PrintStatus();
 
     bool WatchdogFuse;
     int ValveState;
