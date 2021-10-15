@@ -151,7 +151,7 @@ void ArduinoHeater::UpdateMysql(void) {
     // Get the Arduino Heater table to update and insert values
     mysqlx::Table ArduinoHeaterState = DDatabase.getTable("ArduinoHeaterState");
     mysqlx::Result ArdHeaterRes = ArduinoHeaterState.insert("HeaterPower", "HeaterSetPower", "TemperatureK1", "TemperatureK2", "WatchDogState")
-            .values(this->currentPower, this->setPower, this->currentTemperatureK1, this->currentTemperatureK2, this->WatchdogFuse).execute();
+            .values(this->currentPower, this->setPower, this->currentTemperatureK2, this->currentTemperatureK1, this->WatchdogFuse).execute(); // Switch TempK1 and TempK2 due to broken cold finger RTD
 
     // Check to see if values were inserted properly
     unsigned int warnings = ArdHeaterRes.getWarningsCount();
