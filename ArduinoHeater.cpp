@@ -133,6 +133,13 @@ void ArduinoHeater::SetPower(int newPower) {
 
 }
 
+void ArduinoHeater::SendHeartbeat(){
+
+    std::string cmd = "h";
+
+    this->WriteString(cmd);
+}
+
 void ArduinoHeater::UpdateMysql(void) {
 
     // Connect to  Database

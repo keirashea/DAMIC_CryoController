@@ -24,6 +24,7 @@ public:
 
     // Set functions
     void SetPower(int power);
+    void SendHeartbeat();
 
     // Other functions
     void UpdateMysql(void );

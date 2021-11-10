@@ -39,6 +39,8 @@ int main(int argc, char** argv)
         // Read current parameters
         ArdHeat->ReadPower();
         ArdHeat->ReadTemperatureK();
+
+        ArdHeat->SendHeartbeat();
         ArdHeat->UpdateMysql();
 
         // Set power based on ArdHeat->setPower
