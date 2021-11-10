@@ -24,7 +24,7 @@
 #define TimeBetweenFillMaintainCold 100.0 // minutes
 #define TimeAfterOverflow 0.1// minute
 #define LN2OverflowVoltageThreshold 2.55
-#define TopRTDFilledThreshold 101
+#define TopRTDFilledThreshold 103
 #define MinimumTimeBeforeOverflow 7.5 // minutes
 #define MaximumValveOpenTime 60 // minutes
 
