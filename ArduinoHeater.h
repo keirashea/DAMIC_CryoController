@@ -12,6 +12,9 @@
 #define ARD_MAXIMUM_POWER 1023
 #define ARD_MINIMUM_POWER 0
 
+const double resistance = 25; // ohms
+const double voltageMaximum = 50; // volts
+
 class ArduinoHeater: public SerialDevice {
 public:
     ArduinoHeater();
@@ -23,15 +26,18 @@ public:
     void ReadTemperatureK();
 
     // Set functions
-    void SetPower(int power);
+    void SetPowerW(float power);
     void SendHeartbeat();
 
     // Other functions
     void UpdateMysql(void );
+    int ConvertPowerToArduinoUnits(float power);
+    float ConvertArduinoUnitsToPower(int power);
 
-    float currentPower;
+    int currentPower;
     float currentTemperatureK1;
     float currentTemperatureK2;
+    float setPowerWatts;
     int setPower;
 
     bool WatchdogFuse;

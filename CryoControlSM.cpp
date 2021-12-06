@@ -42,8 +42,8 @@ CryoControlSM::CryoControlSM(void)
     /*The two PID implementations*/
     this->AbsPID = new PID(&CurrentTemperature, &TOutput, &SetTemperature, KpA, KiA, KdA, P_ON_M, DIRECT);
     this->RatePID = new PID(&TemperatureRateMovingAvg, &ROutput, &RSetpoint, KpR, KiR, KdR, P_ON_M, DIRECT);
-    this->AbsPID->SetOutputLimits(ARD_MINIMUM_POWER, ARD_MAXIMUM_POWER);
-    this->RatePID->SetOutputLimits(ARD_MINIMUM_POWER, ARD_MAXIMUM_POWER);
+    this->AbsPID->SetOutputLimits(MinPower, MaxPower);
+    this->RatePID->SetOutputLimits(MinPower, MaxPower);
 }
 
 CryoControlSM::~CryoControlSM(void)

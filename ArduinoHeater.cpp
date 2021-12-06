@@ -14,6 +14,7 @@
 #include <errno.h>      // Error number definitions
 #include <termios.h>    // POSIX terminal control definitions
 #include <unistd.h>
+#include <cmath>
 
 #include "SerialDeviceT.hpp"
 #include "ArduinoHeater.h"
@@ -110,27 +111,45 @@ void ArduinoHeater::ReadTemperatureK() {
 
 }
 
-void ArduinoHeater::SetPower(int newPower) {
+void ArduinoHeater::SetPowerW(float newPower) {
 
-    if (newPower < ARD_MINIMUM_POWER) newPower = ARD_MINIMUM_POWER;
-    if (newPower > ARD_MAXIMUM_POWER) newPower = ARD_MAXIMUM_POWER;
+    int arduinoPower = ConvertPowerToArduinoUnits(newPower);
+
+    if (arduinoPower < ARD_MINIMUM_POWER) arduinoPower = ARD_MINIMUM_POWER;
+    if (arduinoPower > ARD_MAXIMUM_POWER) arduinoPower = ARD_MAXIMUM_POWER;
 
     std::string ArdSP_string;
-    std::string ArdCmd = "w" + std::to_string(newPower);
+    std::string ArdCmd = "w" + std::to_string(arduinoPower);
 
     this->WriteString(ArdCmd);
     sleep(1);
     ArdSP_string = this->ReadLine();
 
     // Check to make sure that the sent power was received
-    if( std::stoi(ArdSP_string) != newPower ){
+    if( std::stoi(ArdSP_string) != arduinoPower ){
         printf("Error in SetPower. Continuing...\n");
         return;
     }
 
     // Update the class with the new power
-    this->setPower = newPower;
+    this->setPower = arduinoPower;
+    this->setPowerWatts = newPower;
 
+}
+
+int ArduinoHeater::ConvertPowerToArduinoUnits(float power){
+
+    double voltage = sqrt(power * resistance);
+    double voltageFraction = voltage / voltageMaximum;
+
+    return (int) (voltageFraction * ARD_MAXIMUM_POWER);
+
+}
+
+float ArduinoHeater::ConvertArduinoUnitsToPower(int power){
+
+    double outputVoltage = (float) power / ARD_MAXIMUM_POWER;
+    return outputVoltage*outputVoltage / resistance;
 }
 
 void ArduinoHeater::SendHeartbeat(){
@@ -147,12 +166,13 @@ void ArduinoHeater::UpdateMysql(void) {
     mysqlx::Schema DDatabase = DDroneSession.getSchema("DAMICDrone");
 
     // Get control parameter table
+
     mysqlx::Table CtrlParameterTable = DDatabase.getTable("ControlParameters");
     mysqlx::RowResult CtrlRowResult = CtrlParameterTable.select("HeaterPower", "WatchDogFuse")
             .bind("IDX", 1).execute();
-    mysqlx::Row CtrlRow = CtrlRowResult.fetchOne();
 
-    this->setPower = CtrlRow[0];
+    mysqlx::Row CtrlRow = CtrlRowResult.fetchOne();
+    this->setPowerWatts = (float) CtrlRow[0];
     this->_cWatchdogFuse = CtrlRow[1];
 
     // Get the Arduino Heater table to update and insert values

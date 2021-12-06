@@ -44,23 +44,33 @@ int main(int argc, char** argv)
         ArdHeat->UpdateMysql();
 
         // Set power based on ArdHeat->setPower
-        ArdHeat->SetPower(ArdHeat->setPower);
+        ArdHeat->SetPowerW(ArdHeat->setPowerWatts);
 
         if (ArdHeat->_cWatchdogFuse != 1){
             fflush(stdout);
             printf("\r-------Watchdog fuse blown, system protection active.-----\n");
-            ArdHeat->SetPower(0);
+            ArdHeat->SetPowerW(0);
             ArdHeat->WatchdogFuse = 0;
             sleep(1);
             continue;
         }
 
 
+        // std::cout << ArdHeat->currentTemperatureK1 << std::endl;
+        // std::cout << ArdHeat->currentTemperatureK2 << std::endl;
+        // std::cout << ArdHeat->currentTemperatureK2 << std::endl;
+        // std::cout << ArdHeat->currentTemperatureK2 << std::endl;
+        // std::cout << ArdHeat->currentTemperatureK2 << std::endl;
 
+        // std::cout << ArdHeat->setPowerWatts << std::endl;
+        // std::cout << ArdHeat->setPower << std::endl;
+        // std::cout <<"\n\n";
 
         fflush(stdout);
-        printf("\rArduino Heater | Power: %0.2f,  Temp1 (K): %0.2f,  Temp2 (K): %0.2f",
-                ArdHeat->currentPower / ARD_MAXIMUM_POWER, ArdHeat->currentTemperatureK1, ArdHeat->currentTemperatureK2);
+        printf("\rArduino Heater | Power (Ard): %i, Power (W): %0.2f,  Temp1 (K): %0.2f,  Temp2 (K): %0.2f",
+                ArdHeat->setPower, ArdHeat->setPowerWatts, ArdHeat->currentTemperatureK1, ArdHeat->currentTemperatureK2);
+        // printf("Arduino Heater | %f, %f, %f, %f\n",
+        //         ArdHeat->setPower, ArdHeat->setPowerWatts, ArdHeat->currentTemperatureK1, ArdHeat->currentTemperatureK2);
 
         sleep(2);
     }

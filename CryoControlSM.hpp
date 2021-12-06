@@ -24,9 +24,12 @@
 #define TimeBetweenFillMaintainCold 100.0 // minutes
 #define TimeAfterOverflow 0.1// minute
 #define LN2OverflowVoltageThreshold 2.55
-#define TopRTDFilledThreshold 103
+#define TopRTDFilledThreshold 109
 #define MinimumTimeBeforeOverflow 7.5 // minutes
-#define MaximumValveOpenTime 60 // minutes
+#define MaximumValveOpenTime 60 // minutes\
+
+const double MaxPower=100;
+const double MinPower=0;
 
 struct DataPacket
 {
