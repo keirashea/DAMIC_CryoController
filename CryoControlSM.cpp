@@ -112,8 +112,12 @@ void CryoControlSM::SMEngine(void)
     if (_thisDataSweep.currentTempK2 > 10 && _thisDataSweep.currentTempK2 < 500)
         this->TemperatureMovingAvgK2 += (_thisDataSweep.currentTempK2 - this->TemperatureMovingAvgK2) / RateMovingAvgN;
 
-    // LN overflow voltage
-    this->OverflowVoltage = _thisDataSweep.overflowVoltage;
+    // LN2 Line Voltage
+    this->CurrentLN2Valve = _thisDataSweep.CurrentLN2Valve;
+    this->CurrentLN2ValveState = _thisDataSweep.CurrentLN2ValveState;
+    this->RTDVoltage = _thisDataSweep.RTDVoltage;
+    this->PreviousRTDVoltages = _thisDataSweep.PreviousRTDVoltages;
+    //this->ValveSwitchTimestamp = _thisDataSweep.ValveSwitchTimestamp;
 
     //cup resistance top
     if (_thisDataSweep.CupTempR0 > 0 && _thisDataSweep.CupTempR0<130){
@@ -190,7 +194,7 @@ void CryoControlSM::StateDecision(void)
 
     /*Maintain a cold state once the temperature is within 20 K of set point*/
     if (std::fabs(this->SetTemperature - this->CurrentTemperature) <= 20 && this->SetTemperature < 220){
-        
+
         // Check if system has run out of Ln2
         if(this->ThisRunValveState == 1 && this->TimeInCurrentLNState > MaximumValveOpenTime*60){
             // Update target temperature
@@ -320,6 +324,20 @@ void CryoControlSM::Fault(void)
     this->ThisRunHeaterPower = 0.0;
 }
 
+void CryoControlSM::LN2FlowCheck(void)
+{
+	time(&NowTime);
+	int TimeSinceValveSwitch = difftime(NowTime, this->ValveSwitchTimestamp);
+
+	if (this->CurrentLN2ValveState == 1 && TimeSinceValveSwitch > 300) {
+		if (this->RTDVoltage <= this->PreviousRTDVoltages[0] || this->RTDVoltage <= this->PreviousRTDVoltages[1] || this->RTDVoltage <= this->PreviousRTDVoltages[2]) {
+			// do nothing
+		} else {
+			this->CurrentLN2Valve = 11 - this->CurrentLN2Valve;
+			this->ValveSwitchTimestamp = time(&NowTime);
+		}
+	}
+}
 /*Note: CooldownHot possibly requires
  *PID limits to be overriden
  *since 75% power seems to be too little
@@ -328,7 +346,6 @@ void CryoControlSM::Fault(void)
 
 void CryoControlSM::CoolDown(void)
 {
-
     /*Entry guard function: Activate rate PID. Set the rate target for RatePID.
      *Turn on cryocooler.
      */
@@ -345,8 +362,6 @@ void CryoControlSM::CoolDown(void)
         /*LN interlock off*/
         this->LN2Interlock = 0;
 
-
-
         /*Turn SRS off*/
         this->ComputedSRSPowerState = 0;
 
@@ -356,17 +371,13 @@ void CryoControlSM::CoolDown(void)
     /*Calculate Rate PID*/
     this->RatePID->Compute();
     this->ThisRunPIDValue = this->ROutput;
+    this->LN2FlowCheck();
 
     // Perform LN2 valve determination
     if(ThisRunValveState == 0 && (this->TimeInCurrentLNState > TimeBetweenFillCooldown*60 || this->CurrentTemperature > 270)){
             ThisRunValveState = 1;
             this->TimeInCurrentLNState = 0;
     }
-
-    //if(!IsOverflow && OverflowVoltage > LN2OverflowVoltageThreshold && ThisRunValveState == 1){
-    //    IsOverflow = 1;
-    //    this->TimeInCurrentLNState = 0;
-    //}
 
     if(!IsOverflow && this->CupTempAvgTop < TopRTDFilledThreshold && ThisRunValveState == 1 && this->TimeInCurrentLNState > MinimumTimeBeforeOverflow*60){
         IsOverflow = 1;
@@ -433,6 +444,7 @@ void CryoControlSM::MaintainCold(void)
     /*Calculate PID*/
     this->AbsPID->Compute();
     this->ThisRunPIDValue = this->TOutput;
+    this->LN2FlowCheck();
 
     // LN2 Valve decision
     if(ThisRunValveState == 0 && this->TimeInCurrentLNState > TimeBetweenFillMaintainCold*60){

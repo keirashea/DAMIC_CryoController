@@ -51,7 +51,11 @@ struct DataPacket
 
     bool WatchdogFuse;
 
-    double overflowVoltage;
+    int CurrentLN2Valve;
+    bool CurrentLN2ValveState;
+    time_t ValveSwitchTimestamp;
+    double RTDVoltage;
+    double PreviousRTDVoltages[3];
 
     time_t LastHeaterArduinoTime;
     time_t LastLNArduinoTime;
@@ -91,11 +95,19 @@ private:
     double RSetpoint = 0.0;
 
     // LN2 Variables
+    int CurrentLN2Valve = 6;
+    bool CurrentLN2ValveState = 0;
+    time_t ValveSwitchTimestamp = 0;	// set back to zero when current valve switches to backup valve
+    double RTDVoltage = 0.;
+    double PreviousRTDVoltages = {0, 0, 0};
+    double LN2TempThreshold = 0.4;
+    //bool IsLNFlowing = 0;
+
     int ThisRunValveState = 0;
-    double OverflowVoltage = 0;
     bool LN2Interlock = 0;
-    long TimeInCurrentLNState = 0;
+    long TimeInCurrentLNState = 0;	// set back to zero when valve switches open or closed
     bool IsOverflow = 0;
+
 
     //cup temp
     double CupTempAvgTop = 300;
@@ -136,6 +148,7 @@ private:
     void MaintainWarm(void);
     void MaintainCold(void);
     void Fault(void);
+    void LN2FlowCheck(void);
 
     /*Enum values of all the states that the FSM can be in*/
     enum FSMStates

@@ -6,6 +6,8 @@
 #define DAMICMCRYOCTRL_LN2CONTROLLER_H
 
 // Includes
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include <ctime>
 #include "UtilityFunctions.hpp"
@@ -21,9 +23,12 @@ public:
 
     // Get functions
     void ReadOverflowVoltage();
+    void ReadRTDVolatge();
 
     // Set functions
+    void WriteValve();
     void WriteValveState();
+
     void SendHeartbeat();
 
     // Other functions
@@ -31,9 +36,11 @@ public:
     void PrintStatus();
 
     bool WatchdogFuse;
-    int ValveState;
-    float overflowVoltage;
+    int CurrentLN2Valve;
+    int CurrentLN2ValveState;
+    float RTDVoltage;
     bool LN2Interlock;
+
 
     std::string SQLStatusMsg;
 

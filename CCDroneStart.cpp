@@ -5,8 +5,10 @@
  * *********************************************** */
 
 /*Std headers*/
+#include <stdio.h>
 #include <vector>
 #include <iostream>
+#include <Network.h>
 #include <algorithm>
 #include <iomanip>
 #include <unistd.h>
@@ -20,11 +22,16 @@
 #include "UtilityFunctions.hpp"
 
 
+#pragma comment(lib,"ws2_32.lib") //Winsock Library
 
+#define BUFLEN 512	//Max length of buffer
+#define PORT 8888	//The port on which to listen for incoming data
 
 int main( int argc, char** argv )
 {
 
+	// std::string IP = "127.0.0.1";
+	// int PORT = 8888;
 
     int numRefreshes = 0;
     int Status, NReadBytes;

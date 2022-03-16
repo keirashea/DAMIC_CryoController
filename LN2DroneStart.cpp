@@ -21,42 +21,35 @@ int main(int argc, char ** argv){
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
 
-        // Read current parameters
-        LN2Control->ReadOverflowVoltage();
+        // Send heartbeat to maintain connection
         LN2Control->SendHeartbeat();
 
         // Update SQL
         LN2Control->UpdateMysql();
 
-        // Write valve state
+        // Write valve state and state which valve should be operational
+        LN2Control->WriteValve();
         LN2Control->WriteValveState();
+        LN2Control->ReadRTDVolatge();
 
         // Implement watchdog -- shuts off liquid nitrogen supplies by forcing state into idle
         if(!LN2Control->WatchdogFuse){
             fflush(stdout);
             printf("\r-------Watchdog fuse blown, system protection active.-----\n");
-            LN2Control->ValveState = 0;
+            LN2Control->CurrentLN2ValveState = 0;
             LN2Control->WriteValveState();
             LN2Control->WatchdogFuse = 0;
             sleep(1);
             continue;
         }
 
-
-        // std::cout << "Valve State: " << LN2Control->ValveState << std::endl;
-        // printf("Liquid Nitrogen Control | Valve State: %i, Overflow Pin (V): %0.2f, Valve Interlock: %i, Valve Open: %i \n",
-                // LN2Control->ValveState, LN2Control->overflowVoltage, LN2Control->LN2Interlock, LN2Control->ValveState && !LN2Control->LN2Interlock );
-	    //advance_cursor();
         LN2Control->PrintStatus();
-        fflush(stdout);   
+
+        fflush(stdout);
 
         sleep(2);
     }
 
-
-
-
     return 0;
 #pragma clang diagnostic pop
 }
-

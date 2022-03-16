@@ -31,7 +31,7 @@ void CryoControlSM::UpdateTargetTemperature(double targetTemp){
     if (warnings != 0) std::cout<<"SQL Generated warnings! \n";
 
 
-    return; 
+    return;
 }
 
 void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
@@ -72,12 +72,25 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
 
     // Get overflow voltage from LN2 Arduino
     mysqlx::Table LNControllerTable = DDb.getTable("LN2ControllerState");
-    mysqlx::RowResult LNControllerRowResult = LNControllerTable.select("UNIX_TIMESTAMP(Time)", "OverflowVoltage").orderBy("Time DESC").limit(1).execute();
+    mysqlx::RowResult LNControllerRowResult = LNControllerTable.select("UNIX_TIMESTAMP(Time)", "RTDVoltage", "CurrentLN2Valve", "CurrentLN2ValveState", "ValveSwitchTimestamp").orderBy("Time DESC").limit(1).execute();
     mysqlx::Row LNControllerRow = LNControllerRowResult.fetchOne();
 
     // Parse LN2
     _thisInteractionData.LastLNArduinoTime = LNControllerRow[0];
-    _thisInteractionData.overflowVoltage = LNControllerRow[1];
+    _thisInteractionData.RTDVoltage = LNControllerRow[1];
+    _thisInteractionData.CurrentLN2Valve = LNControllerRow[2];
+    _thisInteractionData.CurrentLN2ValveState = LNControllerRow[3];
+    _thisInteractionData.ValveSwitchTimestamp = LNControllerRow[4];
+
+    // Get rtd voltage from LN2 Arduino
+    mysqlx::Table LNControllerTable = DDb.getTable("LN2ControllerState");
+    mysqlx::RowResult LNControllerRowResult = LNControllerTable.select("RTDVoltage").orderBy("Time DESC").limit(3).execute();
+    mysqlx::Row LNControllerRow = LNControllerRowResult.fetchOne();
+
+    // Parse previous LN2 voltages
+    _thisInteractionData.PreviousRTDVoltages[0] = LNControllerRow[0];
+    _thisInteractionData.PreviousRTDVoltages[1] = LNControllerRow[1];
+    _thisInteractionData.PreviousRTDVoltages[2] = LNControllerRow[2];
 
     // Get Cup RTD info
     mysqlx::Table CupTempTable = DDb.getTable("ArduinoCupTemp");
@@ -114,6 +127,7 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     mysqlx::Result SCResult= SendControl.update()
                                         .set("HeaterPower",this->ThisRunHeaterPower)
                                         .set("SMState", (int)this->CurrentFSMState)
+										.set("CurrentLN2Valve", (int)this->CurrentLN2Valve)
                                         .where("IDX=1").execute();
     warnings+=SCResult.getWarningsCount();
 
