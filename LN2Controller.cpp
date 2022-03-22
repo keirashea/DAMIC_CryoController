@@ -17,7 +17,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include "udpclient.h"
 
 #include "LN2Controller.h"
 #include "SerialDeviceT.hpp"
@@ -41,7 +40,7 @@ LN2Controller::LN2Controller(){
     int socket_desc;
     struct sockaddr_in server_addr, client_addr;
     char server_message[2000], client_message[2000];
-    int client_struct_length = sizeof(client_addr);
+    unsigned int client_struct_length = sizeof(client_addr);
 
     // Clean buffers:
     memset(server_message, '\0', sizeof(server_message));
@@ -97,16 +96,6 @@ LN2Controller::LN2Controller(){
 }
 
 
-//LN2Controller::LN2Controller(std::string){
-//
-//
-//    this->WatchdogFuse = 1;
-//    this->CurrentLN2Valve = 6;
-//    this->CurrentLN2ValveState = 0;
-//    this->RTDVoltage = 0;
-//    this->LN2Interlock = 0;	// double check with Alex
-//}
-
 LN2Controller::~LN2Controller(){
     close(USB);
 };
@@ -146,13 +135,13 @@ void LN2Controller::UpdateMysql(void ){
     mysqlx::Row CtrlRow = CtrlRowResult.fetchOne();
     this->WatchdogFuse = (bool) CtrlRow[0];
     this->LN2Interlock = (bool) CtrlRow[1];
-    this->ValveState = (int) CtrlRow[2];
-    this->CurrentValve = (int) CtrlRow[3];
+    this->CurrentLN2ValveState = (int) CtrlRow[2];
+    this->CurrentLN2Valve = (int) CtrlRow[3];
 
     // Get the LN2 table to update and insert values
     mysqlx::Table LN2ControllerTable = DDatabase.getTable("LN2ControllerState");
     mysqlx::Result LN2ControllerResult = LN2ControllerTable.insert("CurrentValve", "CurrentValveState", "RTDVoltage")
-            .values(this->CurrentValve, this->ValveState, this->RTDVoltage).execute();
+            .values(this->CurrentLN2Valve, this->CurrentLN2ValveState, this->RTDVoltage).execute();
 
     // Check to see if values were inserted properly
     unsigned int warnings = LN2ControllerResult.getWarningsCount();

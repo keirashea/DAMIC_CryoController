@@ -71,7 +71,7 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     _thisInteractionData.currentTempK2 = ArdHeatRow[2];
 
     // Get overflow voltage from LN2 Arduino
-    mysqlx::Table LNControllerTable = DDb.getTable("LN2ControllerState");
+    mysqlx::Table LNControllerTable = DDb.getTable("LN2ControllerStateMulti");
     mysqlx::RowResult LNControllerRowResult = LNControllerTable.select("UNIX_TIMESTAMP(Time)", "RTDVoltage", "CurrentLN2Valve", "CurrentLN2ValveState", "ValveSwitchTimestamp").orderBy("Time DESC").limit(1).execute();
     mysqlx::Row LNControllerRow = LNControllerRowResult.fetchOne();
 
@@ -79,18 +79,17 @@ void CryoControlSM::UpdateVars(DataPacket &_thisInteractionData ){
     _thisInteractionData.LastLNArduinoTime = LNControllerRow[0];
     _thisInteractionData.RTDVoltage = LNControllerRow[1];
     _thisInteractionData.CurrentLN2Valve = LNControllerRow[2];
-    _thisInteractionData.CurrentLN2ValveState = LNControllerRow[3];
+    _thisInteractionData.CurrentLN2ValveState = bool(LNControllerRow[3]);
     _thisInteractionData.ValveSwitchTimestamp = LNControllerRow[4];
 
     // Get rtd voltage from LN2 Arduino
-    mysqlx::Table LNControllerTable = DDb.getTable("LN2ControllerState");
-    mysqlx::RowResult LNControllerRowResult = LNControllerTable.select("RTDVoltage").orderBy("Time DESC").limit(3).execute();
-    mysqlx::Row LNControllerRow = LNControllerRowResult.fetchOne();
+    LNControllerRowResult = LNControllerTable.select("RTDVoltage").orderBy("Time DESC").limit(3).execute();
 
-    // Parse previous LN2 voltages
-    _thisInteractionData.PreviousRTDVoltages[0] = LNControllerRow[0];
-    _thisInteractionData.PreviousRTDVoltages[1] = LNControllerRow[1];
-    _thisInteractionData.PreviousRTDVoltages[2] = LNControllerRow[2];
+    for (int i = 0; i < 3; ++i)
+    {
+        LNControllerRow = LNControllerRowResult.fetchOne();
+        _thisInteractionData.PreviousRTDVoltages[i] = LNControllerRow[0];
+    }
 
     // Get Cup RTD info
     mysqlx::Table CupTempTable = DDb.getTable("ArduinoCupTemp");

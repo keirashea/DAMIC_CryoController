@@ -18,7 +18,6 @@ class LN2Controller: public SerialDevice {
 
 public:
     LN2Controller();
-    LN2Controller(std::string);
     ~LN2Controller();
 
     // Get functions

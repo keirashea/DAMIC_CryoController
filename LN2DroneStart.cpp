@@ -13,8 +13,7 @@
 int main(int argc, char ** argv){
 
     // Create new serial object
-    auto * LN2Control = new LN2Controller("/dev/ArduinoLN2"); // may need to change the name
-//    auto * LN2Control = new LN2Controller(); // Dummy class
+    auto * LN2Control = new LN2Controller();
     sleep(1);
 
 #pragma clang diagnostic push
