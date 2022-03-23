@@ -116,7 +116,11 @@ void CryoControlSM::SMEngine(void)
     this->CurrentLN2Valve = _thisDataSweep.CurrentLN2Valve;
     this->CurrentLN2ValveState = _thisDataSweep.CurrentLN2ValveState;
     this->RTDVoltage = _thisDataSweep.RTDVoltage;
-    this->PreviousRTDVoltages = _thisDataSweep.PreviousRTDVoltages;
+    for (int i = 0; i < 3; ++i)
+    {
+        this->PreviousRTDVoltages[i] = _thisDataSweep.PreviousRTDVoltages[i];
+    }
+    // this->PreviousRTDVoltages = _thisDataSweep.PreviousRTDVoltages;
     //this->ValveSwitchTimestamp = _thisDataSweep.ValveSwitchTimestamp;
 
     //cup resistance top

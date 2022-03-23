@@ -13,9 +13,13 @@
 int main(int argc, char ** argv){
 
     // Create new serial object
+<<<<<<< HEAD
 	std::string server_ip = "";
     auto * LN2Control = new LN2Controller(server_ip); // may need to change the name
 //    auto * LN2Control = new LN2Controller(); // Dummy class
+=======
+    auto * LN2Control = new LN2Controller();
+>>>>>>> c8e0ed6bc3f91db69b7dbf5ca32785287c6587c8
     sleep(1);
 
 #pragma clang diagnostic push

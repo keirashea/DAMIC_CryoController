@@ -18,7 +18,11 @@
 class LN2Controller: public UDPClient {
 
 public:
+<<<<<<< HEAD
     LN2Controller(std::string);
+=======
+    LN2Controller();
+>>>>>>> c8e0ed6bc3f91db69b7dbf5ca32785287c6587c8
     ~LN2Controller();
 
     // Get functions
