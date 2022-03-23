@@ -13,7 +13,8 @@
 int main(int argc, char ** argv){
 
     // Create new serial object
-    auto * LN2Control = new LN2Controller("/dev/ArduinoLN2"); // may need to change the name
+	std::string server_ip = "";
+    auto * LN2Control = new LN2Controller(server_ip); // may need to change the name
 //    auto * LN2Control = new LN2Controller(); // Dummy class
     sleep(1);
 
@@ -23,6 +24,7 @@ int main(int argc, char ** argv){
 
         // Send heartbeat to maintain connection
         LN2Control->SendHeartbeat();
+        LN2Control->ReadRTDVolatge();
 
         // Update SQL
         LN2Control->UpdateMysql();
@@ -30,7 +32,7 @@ int main(int argc, char ** argv){
         // Write valve state and state which valve should be operational
         LN2Control->WriteValve();
         LN2Control->WriteValveState();
-        LN2Control->ReadRTDVolatge();
+
 
         // Implement watchdog -- shuts off liquid nitrogen supplies by forcing state into idle
         if(!LN2Control->WatchdogFuse){

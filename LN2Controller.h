@@ -10,19 +10,18 @@
 #include <stdlib.h>
 #include <iostream>
 #include <ctime>
+
+#include "UDPClient.hpp"
 #include "UtilityFunctions.hpp"
-#include "SerialDeviceT.hpp"
 
 
-class LN2Controller: public SerialDevice {
+class LN2Controller: public UDPClient {
 
 public:
-    LN2Controller();
     LN2Controller(std::string);
     ~LN2Controller();
 
     // Get functions
-    void ReadOverflowVoltage();
     void ReadRTDVolatge();
 
     // Set functions
