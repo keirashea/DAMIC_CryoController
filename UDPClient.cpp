@@ -38,7 +38,7 @@ UDPClient::UDPClient(std::string server_ip)
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(PORT_NUM);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
-	//server_addr.sin_addr = inet_addr((const char *)server_ip);
+	//server_addr.sin_addr = inet_addr((char *)server_ip);
 
 
 	// Bind to the set port and IP:
@@ -58,21 +58,21 @@ char* UDPClient::ExchangePackets(char* data_buffer)
 {
 	// sends buffer to server
 	//char data_buffer[MAX_LEN];
-	memset(data_buffer, '\0', sizeof(data_buffer));
+	//memset(data_buffer, '\0', sizeof(data_buffer));
 
 	if (sendto(socket_fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0){
 		return -1;
 	}
 
 	// receive buffer from server
-	char receiving_buffer[MAX_LEN];
-	memset(receiving_buffer, '\0', sizeof(receiving_buffer));
-	socklen_t addr_len;
+	char* recv_buffer[MAX_LEN];
+	memset(recv_buffer, '\0', sizeof(recv_buffer));
+	socklen_t server_addr_len;
 
-	if(recvfrom(socket_fd, receiving_buffer, MAX_LEN, 0, (struct sockaddr*) &server_addr, &addr_len) < 0){
+	if(recvfrom(socket_fd, recv_buffer, MAX_LEN, 0, (struct sockaddr*) &server_addr, &server_addr_len) < 0){
 		return -1;
 	} else {
-		return receiving_buffer;
+		return recv_buffer;
 	}
 
 
