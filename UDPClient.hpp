@@ -4,7 +4,6 @@
  *  Created on: Mar 21, 2022
  *      Author: keirahansen
  */
-//#include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <netinet/in.h>
@@ -16,7 +15,7 @@
 class UDPClient
 {
 public:
-    UDPClient(std::string );
+    UDPClient(std::string);
     ~UDPClient();
     char* ExchangePackets(char*);
 

@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #include "LN2Controller.h"
-#include "SerialDeviceT.hpp"
+//#include "UDPClient.hpp"
 #include "MysqlCredentials.hpp"
 #include <mysqlx/xdevapi.h>
 
@@ -127,7 +127,7 @@ void LN2Controller::UpdateMysql(void ){
     // Get the LN2 table to update and insert values
     mysqlx::Table LN2ControllerTable = DDatabase.getTable("LN2ControllerState");
     mysqlx::Result LN2ControllerResult = LN2ControllerTable.insert("CurrentValve", "CurrentValveState", "RTDVoltage")
-            .values(this->CurrentLN2Valve, this->CurrentLN2ValveState, this->RTDVoltage).execute();
+            .values(this->CurrentValve, this->ValveState, this->RTDVoltage).execute();
 
     // Check to see if values were inserted properly
     unsigned int warnings = LN2ControllerResult.getWarningsCount();
