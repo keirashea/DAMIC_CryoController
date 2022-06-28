@@ -99,9 +99,8 @@ private:
     bool CurrentLN2ValveState = 0;
     time_t ValveSwitchTimestamp = 0;	// set back to zero when current valve switches to backup valve
     double RTDVoltage = 0.;
-    double PreviousRTDVoltages[3] = {0., 0., 0.};
+    double PreviousRTDVoltages = {0, 0, 0};
     double LN2TempThreshold = 0.4;
-    //bool IsLNFlowing = 0;
 
     int ThisRunValveState = 0;
     bool LN2Interlock = 0;

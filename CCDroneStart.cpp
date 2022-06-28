@@ -41,7 +41,7 @@ int main( int argc, char** argv )
     Cryocooler *SunPowerCC = new Cryocooler("/dev/SunPowerCC");
     sleep(1);
 
-    
+
 
     do {
 

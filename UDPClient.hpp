@@ -7,6 +7,7 @@
 //#include <iostream>
 #include <stdlib.h>
 #include <string>
+#include <netinet/in.h>
 
 #ifndef UDPCLIENT_HPP_
 #define UDPCLIENT_HPP_

@@ -6,27 +6,21 @@
 #define DAMICMCRYOCTRL_LN2CONTROLLER_H
 
 // Includes
-#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
 #include <ctime>
-
-#include "UDPClient.hpp"
 #include "UtilityFunctions.hpp"
+#include "SerialDeviceT.hpp"
 
 
-class LN2Controller: public UDPClient {
+class LN2Controller: public SerialDevice {
 
 public:
-<<<<<<< HEAD
-    LN2Controller(std::string);
-=======
     LN2Controller();
->>>>>>> c8e0ed6bc3f91db69b7dbf5ca32785287c6587c8
+    LN2Controller(std::string);
     ~LN2Controller();
 
     // Get functions
-    void ReadRTDVolatge();
+    void ReadRTD();
 
     // Set functions
     void WriteValve();

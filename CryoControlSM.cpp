@@ -116,12 +116,10 @@ void CryoControlSM::SMEngine(void)
     this->CurrentLN2Valve = _thisDataSweep.CurrentLN2Valve;
     this->CurrentLN2ValveState = _thisDataSweep.CurrentLN2ValveState;
     this->RTDVoltage = _thisDataSweep.RTDVoltage;
-    for (int i = 0; i < 3; ++i)
-    {
-        this->PreviousRTDVoltages[i] = _thisDataSweep.PreviousRTDVoltages[i];
+    this->ValveSwitchTimestamp = _thisDataSweep.ValveSwitchTimestamp;
+    for (int i = 0; i < 3: ++i){
+    	this->PreviousRTDVoltages[i] = _thisDataSweep.PreviousRTDVoltages[i];
     }
-    // this->PreviousRTDVoltages = _thisDataSweep.PreviousRTDVoltages;
-    //this->ValveSwitchTimestamp = _thisDataSweep.ValveSwitchTimestamp;
 
     //cup resistance top
     if (_thisDataSweep.CupTempR0 > 0 && _thisDataSweep.CupTempR0<130){
@@ -335,8 +333,8 @@ void CryoControlSM::LN2FlowCheck(void)
 
 	if (this->CurrentLN2ValveState == 1 && TimeSinceValveSwitch > 300) {
 		if (this->RTDVoltage <= this->PreviousRTDVoltages[0] || this->RTDVoltage <= this->PreviousRTDVoltages[1] || this->RTDVoltage <= this->PreviousRTDVoltages[2]) {
-			// do nothing
-		} else {
+			// LN2 is flowing
+		} else {	// LN2 is not flowing
 			this->CurrentLN2Valve = 11 - this->CurrentLN2Valve;
 			this->ValveSwitchTimestamp = time(&NowTime);
 		}
